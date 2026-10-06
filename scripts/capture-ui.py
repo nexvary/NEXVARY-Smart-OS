@@ -21,6 +21,10 @@ for cls in (LinuxWindow,DriverWindow):
         if '--scan' in sys.argv and cls is DriverWindow:
             window.navigate(1); app.processEvents(); window.grab().save(str(output/f'DriverDevices-{language}.png'))
         if cls is DriverWindow:
+            if '--scan' in sys.argv and platform.system()=='Windows':
+                import json
+                verified=json.loads(Path('artifacts/verification/windows-readonly.json').read_text(encoding='utf-8'))
+                window.servicing_done(verified['dism']['health'])
             window.navigate(5); app.processEvents(); window.grab().save(str(output/f'WindowsServicing-{language}.png'))
         elif cls is LinuxWindow:
             window.navigate(2); app.processEvents(); window.grab().save(str(output/f'LinuxISO-{language}.png'))

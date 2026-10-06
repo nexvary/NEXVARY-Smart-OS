@@ -4,6 +4,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QTextBrowser, QTableWidget, QTableWidgetItem, QHeaderView
 
 LABELS={
+ 'tool':('Tool','الأداة'),'operation':('Operation','العملية'),'scope':('Scope','نطاق الفحص'),'changes_requested':('Changes requested','تغييرات مطلوبة'),'output':('Command output','نتيجة الأمر'),
  'checks':('Readiness checks','فحوص الجاهزية'),'check':('Check','الفحص'),'state':('Result','النتيجة'),'value':('Observed value','القيمة المكتشفة'),'action':('Next step','الخطوة التالية'),'ready_to_partition':('Ready to partition','جاهز لتعديل الأقسام'),'automatic_changes':('Automatic changes','تغييرات تلقائية'),'class_name':('Device class','فئة الجهاز'),'checksum_status':('Checksum status','حالة البصمة'),'release_label':('Release label','اسم الإصدار'),'warnings':('Warnings','تنبيهات'),
  'system':('Operating system','نظام التشغيل'),'architecture':('Architecture','المعمارية'),
  'cpu':('Processor','المعالج'),'memory_bytes':('Memory','الذاكرة'), 'boot_mode':('Boot mode','وضع الإقلاع'),
@@ -30,7 +31,7 @@ def value_text(value,language,key=''):
     if value is None:return 'لم يُفحص' if language=='ar' else 'Not checked'
     if isinstance(value,bool):return ('نعم' if value else 'لا') if language=='ar' else ('Yes' if value else 'No')
     if key in {'memory_bytes','size'} and isinstance(value,(int,float)):return f'{value/1024**3:.1f} GiB'
-    translations={'passed':'اجتاز الفحص','review':'يحتاج مراجعة','unknown':'غير معروف','boot-mode':'وضع الإقلاع','fast-startup':'بدء التشغيل السريع','bitlocker':'تشفير BitLocker','partition-space':'مساحة الأقسام','windows-state':'حالة Windows','blocked-in-alpha':'غير مفعّل في النسخة الأولية',
+    translations={'Existing corruption flags only; not a full scan or repair':'مؤشرات التلف المسجلة فقط؛ دون فحص شامل أو إصلاح','passed':'اجتاز الفحص','review':'يحتاج مراجعة','unknown':'غير معروف','boot-mode':'وضع الإقلاع','fast-startup':'بدء التشغيل السريع','bitlocker':'تشفير BitLocker','partition-space':'مساحة الأقسام','windows-state':'حالة Windows','blocked-in-alpha':'غير مفعّل في النسخة الأولية',
     'Use installation media matching the current boot mode.':'استخدم وسيط تثبيت متوافقًا مع وضع الإقلاع الحالي.',
     'Disable Fast Startup manually in Windows before accessing Windows volumes from Linux.':'عطّل بدء التشغيل السريع يدويًا في Windows قبل الوصول إلى أقسامه من Linux.',
     'Check encryption and obtain a recovery key manually. No encryption settings are changed.':'راجع التشفير واحتفظ بمفتاح الاسترداد يدويًا. لا يغيّر البرنامج إعدادات التشفير.',
@@ -50,6 +51,7 @@ class ReportPanel(QTextBrowser):
                 for key,val in data.items():
                     if key=='serial':continue
                     content=render(val,depth+1) if isinstance(val,(dict,list,tuple)) else escape(value_text(val,language,key))
+                    if key=='output' and isinstance(val,str):content='<pre dir="ltr" style="white-space:pre-wrap">'+escape(val)+'</pre>'
                     rows.append(f'<tr><td width="28%" style="color:#a9c6b0;padding:8px">{escape(label(key,language))}</td><td style="padding:8px"><span dir="auto">{content}</span></td></tr>')
                 return '<table width="100%" cellspacing="0">'+''.join(rows)+'</table>'
             if isinstance(data,(list,tuple)):

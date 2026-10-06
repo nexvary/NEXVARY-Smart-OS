@@ -48,3 +48,9 @@ class DesktopTests(unittest.TestCase):
         w=DriverWindow('en'); self.assertTrue(w.device_panel.isHidden())
         w.devices=[Device('id','Wi-Fi','OEM','Net',('PCI\\VEN_1234',),(),28)]; w.render_devices(); w.device_table.selectRow(0)
         self.assertFalse(w.device_panel.isHidden()); self.assertIn('Wi-Fi',w.device_panel.toPlainText()); w.close()
+
+    def test_servicing_output_preserves_lines_and_escapes_markup(self):
+        from smart_os.ui.panels import ReportPanel
+        panel=ReportPanel('ar'); panel.display({'output':'First line\nSecond line <unsafe>'})
+        self.assertIn('First line\nSecond line <unsafe>',panel.toPlainText())
+        self.assertIn('نتيجة الأمر',panel.toPlainText()); self.assertIn('&lt;unsafe&gt;',panel.toHtml()); panel.close()
