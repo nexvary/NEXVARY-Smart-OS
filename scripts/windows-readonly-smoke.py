@@ -58,7 +58,12 @@ with tempfile.TemporaryDirectory() as folder:
         trusted=next(p for p in verified if p.suffix.lower()=='.inf' and any(a['inf']==p.name and a['trust']['verified'] for a in audits))
         corrupt=Path(folder)/'corrupt-package'; shutil.copytree(trusted.parent,corrupt)
         target=next(p for p in corrupt.rglob('*') if p.suffix.lower() in {'.sys','.dll'})
-        target.write_bytes(target.read_bytes()+b'SMART-OS-TAMPER-TEST')
+        import struct
+        data=bytearray(target.read_bytes()); pe=struct.unpack_from('<I',data,0x3c)[0]
+        section=pe+24+struct.unpack_from('<H',data,pe+20)[0]
+        payload_offset=struct.unpack_from('<I',data,section+20)[0]
+        assert 0<payload_offset<len(data)
+        data[payload_offset]^=1; target.write_bytes(data)
         rejected=verify_package(corrupt/trusted.name,parse_inf(corrupt/trusted.name).catalog)
         assert not rejected.verified, 'Modified payload passed trust verification'
         result['native_tampered_payload_rejected']=True

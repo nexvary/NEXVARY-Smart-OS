@@ -5,6 +5,9 @@ if not getattr(sys,'frozen',False):sys.path.insert(0,str(Path(__file__).resolve(
 from smart_os.core.elevation import serve
 
 def main():
+    if sys.argv[1:]==['--audit']:
+        from smart_os.driver_engine.worker import main as audit
+        return audit()
     import argparse
     parser=argparse.ArgumentParser();parser.add_argument('--pipe',required=True);parser.add_argument('--server-pid',required=True,type=int)
     args=parser.parse_args();serve(args.pipe,args.server_pid);return 0

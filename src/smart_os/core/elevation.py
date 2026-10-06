@@ -111,7 +111,7 @@ def request_operation(operation,parameters=None):
     try:
         attrs=SecurityAttributes(C.sizeof(SecurityAttributes),descriptor,False);name=PREFIX+request['nonce']
         create=function(kernel,'CreateNamedPipeW',[W,D,D,D,D,D,D,C.POINTER(SecurityAttributes)],P)
-        handle=create(name,3|0x80000,4|2|1|8,1,MAX_RESPONSE,MAX_REQUEST,0,C.byref(attrs))
+        handle=create(name,3|0x80000,4|2|1|8,1,MAX_REQUEST,MAX_RESPONSE,0,C.byref(attrs))
         if handle in (None,C.c_void_p(-1).value):raise OSError('Cannot create protected local pipe')
         pipe=P(handle);exe,arguments=helper_command();arguments+=['--pipe',name,'--server-pid',str(os.getpid())]
         info=ShellExecuteInfo();info.size=C.sizeof(info);info.mask=0x40|0x100|0x400;info.verb='runas';info.file=exe;info.parameters=subprocess.list2cmdline(arguments);info.show=0
@@ -171,5 +171,6 @@ def serve(pipe_name,server_pid):
         data=json.dumps(response).encode()
         if len(data)>MAX_RESPONSE:raise OperationError('Privilege result exceeds size limit')
         _write(kernel,handle,data)
-        # The peer reads before its handles close; Windows buffers the message.
+        flush=function(kernel,'FlushFileBuffers',[P],C.c_int)
+        flush(handle) # keep the result channel open until the peer has consumed it
     finally:close(handle)

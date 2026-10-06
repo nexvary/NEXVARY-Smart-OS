@@ -81,7 +81,7 @@ def verify_member(file:Path,catalog:Path)->bool:
         return False
     finally:close(handle)
 
-def verify_package(inf:Path,catalog_name:str)->TrustResult:
+def _verify_package(inf:Path,catalog_name:str)->TrustResult:
     if platform.system()!='Windows':raise UnsupportedPlatform('Native driver verification requires Windows')
     inf=Path(inf).resolve(strict=True)
     if inf.suffix.lower()!='.inf' or not inf.is_file():raise ValueError('Choose an INF file')
@@ -104,7 +104,7 @@ def verify_package(inf:Path,catalog_name:str)->TrustResult:
     if not count:return TrustResult(False,reason='No catalog members verified')
     return TrustResult(True,signer.signer,str(catalog),count,'Windows INF signature and all payload catalog memberships verified; cached trust policy')
 
-def compatible_drivers(inf:Path,instance_id:str)->list[dict]:
+def _compatible_drivers(inf:Path,instance_id:str)->list[dict]:
     """Let SetupAPI choose valid model/OS decorations for the current device."""
     setup=dll('setupapi.dll'); path=str(Path(inf).resolve(strict=True))
     if len(path)>=260:raise ValueError('INF path exceeds supported native inspection length')
@@ -140,3 +140,15 @@ def compatible_drivers(inf:Path,instance_id:str)->list[dict]:
             result.append({'description':info.description,'manufacturer':info.manufacturer,'provider':info.provider,'version':version,'native_rank':details.rank})
         return sorted(result,key=lambda x:x['native_rank'])
     finally:destroy(handle)
+
+
+def verify_package(inf:Path,catalog_name:str)->TrustResult:
+    if platform.system()!='Windows':raise UnsupportedPlatform('Native driver verification requires Windows')
+    from .worker import inspect
+    return TrustResult(**inspect('verify-package',{'inf':str(Path(inf).resolve(strict=True)),'catalog':catalog_name}))
+
+
+def compatible_drivers(inf:Path,instance_id:str)->list[dict]:
+    if platform.system()!='Windows':raise UnsupportedPlatform('Native driver compatibility requires Windows')
+    from .worker import inspect
+    return inspect('compatible-drivers',{'inf':str(Path(inf).resolve(strict=True)),'instance_id':instance_id})

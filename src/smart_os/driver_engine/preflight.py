@@ -19,6 +19,7 @@ def review_driver(inf:Path,device:Device)->dict:
             'recovery':{'backup_required':bool(device.driver_inf),'restore_point':'not-created','rollback':'not-validated'}}
     if not basic.score:
         result['reason']=basic.reason;return result
+    before={p.relative_to(inf.parent).as_posix():sha256(p) for p in sorted(inf.parent.rglob('*')) if p.is_file()}
     trust=verify_package(inf,candidate.catalog);result['trust']=trust.to_dict();result['trust_verified']=trust.verified
     if not trust.verified:result['reason']=trust.reason;return result
     native=compatible_drivers(inf,device.instance_id);result['native_candidates']=native;result['native_compatible']=bool(native)
@@ -28,6 +29,8 @@ def review_driver(inf:Path,device:Device)->dict:
     if device.class_name.casefold() in {'firmware','system','scsiadapter','hdc','securitydevices'}:
         result['reason']='Sensitive driver class needs a separately validated recovery workflow';return result
     files={p.relative_to(inf.parent).as_posix():sha256(p) for p in sorted(inf.parent.rglob('*')) if p.is_file()}
+    if files!=before:
+        result['reason']='Driver package changed during review; review again';return result
     payload={'inf':inf.name,'instance_id':device.instance_id,'current_inf':device.driver_inf,'current_version':device.version,'files':files}
     result['plan_digest']=hashlib.sha256(json.dumps(payload,sort_keys=True,separators=(',',':')).encode()).hexdigest()
     result['preflight_passed']=True

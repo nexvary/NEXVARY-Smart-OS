@@ -12,6 +12,8 @@ foreach ($Name in @('SmartLinuxInstaller', 'SmartWindowsDriver')) {
     if ($Name -eq 'SmartWindowsDriver') {
         $HelperTest = Start-Process $Executable -ArgumentList '--privilege-self-check' -Wait -PassThru
         if ($HelperTest.ExitCode -ne 0) { throw 'Installed privilege helper check failed' }
+        $AuditTest = Start-Process $Executable -ArgumentList '--native-audit-self-check' -Wait -PassThru
+        if ($AuditTest.ExitCode -ne 0) { throw 'Installed driver audit check failed' }
     }
     $Process = Start-Process (Join-Path $Destination 'unins000.exe') -ArgumentList '/VERYSILENT', '/NORESTART' -Wait -PassThru
     if ($Process.ExitCode -ne 0) { throw "$Name uninstall failed" }

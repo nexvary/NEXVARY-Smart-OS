@@ -43,6 +43,13 @@ class PreflightTests(unittest.TestCase):
             self.assertNotEqual(a['plan_digest'],b['plan_digest'])
             (self.inf.parent/'payload.sys').write_bytes(b'mutated')
             self.assertNotEqual(a['plan_digest'],preflight.review_driver(self.inf,self.device)['plan_digest'])
+    def test_package_changes_during_native_review_block_plan(self):
+        def mutate(*args):
+            (self.inf.parent/'injected.sys').write_bytes(b'changed during review')
+            return [{'native_rank':1}]
+        with patch.object(preflight,'verify_package',return_value=TrustResult(True)),patch.object(preflight,'compatible_drivers',side_effect=mutate):
+            result=preflight.review_driver(self.inf,self.device)
+            self.assertFalse(result['preflight_passed']);self.assertNotIn('plan_digest',result)
     def test_native_calls_reject_non_windows(self):
         with patch.object(native.platform,'system',return_value='Linux'):
             with self.assertRaises(UnsupportedPlatform):native.verify_package(self.inf,'driver.cat')
@@ -70,3 +77,13 @@ class PrivilegeProtocolTests(unittest.TestCase):
     def test_dispatch_never_interprets_commands(self):
         with patch('smart_os.driver_engine.servicing.check_health',return_value={'changes_requested':False}) as operation:
             self.assertFalse(dispatch(self.request())['changes_requested']);operation.assert_called_once_with()
+
+class AuditProtocolTests(unittest.TestCase):
+    def test_readonly_operations_only(self):
+        from smart_os.driver_engine.worker import dispatch
+        for op in ('install-driver','run','powershell','delete-driver'):
+            with self.assertRaises(ValueError):dispatch({'schema':1,'operation':op,'parameters':{}})
+    def test_relative_or_nul_paths_rejected(self):
+        from smart_os.driver_engine.worker import dispatch
+        for inf in ('driver.inf','/path\0evil'):
+            with self.assertRaises(ValueError):dispatch({'schema':1,'operation':'verify-package','parameters':{'inf':inf,'catalog':'driver.cat'}})

@@ -138,6 +138,14 @@ class DriverWindow(BaseWindow):
 def main():
     import sys
     app=application(); window=DriverWindow(); window.show()
+    if "--native-audit-self-check" in sys.argv:
+        import tempfile
+        from .driver_engine.native import verify_package
+        with tempfile.TemporaryDirectory() as folder:
+            inf=Path(folder)/'unsigned.inf';inf.write_text('[Version]\nSignature="$Windows NT$"\nClass=Net\nClassGuid={4d36e972-e325-11ce-bfc1-08002be10318}\nProvider=NEXVARY\nDriverVer=10/06/2026,0.0.0.1\nCatalogFile=unsigned.cat\n')
+            (Path(folder)/'unsigned.cat').write_bytes(b'Unsigned test fixture')
+            assert not verify_package(inf,'unsigned.cat').verified
+        window.close();return 0
     if "--privilege-self-check" in sys.argv:
         result=request_operation('check-health')
         assert result['changes_requested'] is False and result['output']

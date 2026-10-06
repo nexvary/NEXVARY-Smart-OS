@@ -1,3 +1,5 @@
+> From 0.3.0, the GUI uses a one-operation UAC helper for these DISM tools and OEM backup. See [current elevation and native preflight](windows-preflight.md). The description below records the 0.2.1 starting point.
+
 # Windows servicing and Dism++ scope
 
 The user-provided Dism++ executable was identified statically, not executed or bundled. Dism++ is partially open source; its full engine source is unavailable according to a core developer:

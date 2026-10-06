@@ -5,7 +5,7 @@ Smart Windows Driver now offers **Devices → Review local INF**. Select a real 
 1. Match hardware IDs conservatively. Compatible IDs alone require OEM review.
 2. SetupVerifyInfFileW verifies the INF signature for the running platform.
 3. WinVerifyTrust verifies each payload against the explicit signed catalog using SIP-aware SHA256/SHA1 hashes. Cached revocation policy fails closed on unknown trust. No WHQL certification is inferred.
-4. SetupAPI enumerates the compatible driver list for the selected local device and the single INF. Windows resolves current OS/model decorations and supplies its native driver rank (lower is better).
+4. SetupAPI enumerates the compatible driver list for the selected local device and the single INF. Windows resolves current OS/model decorations and supplies its native driver rank (lower is better). Native audits run in short-lived unprivileged processes so provider catalog caches release their file handles before returning. Package fingerprints are checked again after verification to detect concurrent edits.
 5. Firmware, system, storage and security classes stay blocked. A review digest binds device identity, current driver and package files. Passing preflight does not authorize installation.
 
 Extra/unlisted payload files, untrusted catalogs, unsupported INF parsing or unavailable Windows APIs can intentionally reject a package. An incomplete offline trust cache may also block verification. Native trust is inspected on the current OS, not predicted for an exported profile from another computer.
