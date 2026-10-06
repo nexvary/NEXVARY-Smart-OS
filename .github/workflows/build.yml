@@ -47,6 +47,9 @@ jobs:
       - name: Build separate Windows installers
         if: runner.os == 'Windows'
         run: ./scripts/build-installers.ps1
+      - name: Verify Windows setup install, launch and uninstall
+        if: runner.os == 'Windows'
+        run: ./scripts/test-installers.ps1
       - uses: actions/upload-artifact@v4
         with:
           name: SmartLinuxInstaller-${{ matrix.os }}

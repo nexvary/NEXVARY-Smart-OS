@@ -3,6 +3,7 @@ AppId=NEXVARY.SmartWindowsDriver
 AppName=Smart Windows Driver
 AppVersion=0.1.0
 AppPublisher=NEXVARY
+SetupIconFile=..\..\ui\assets\smart-os.ico
 AppPublisherURL=https://nexvary.com
 DefaultDirName={localappdata}\Programs\NEXVARY\SmartWindowsDriver
 PrivilegesRequired=lowest
