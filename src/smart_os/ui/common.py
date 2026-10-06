@@ -50,6 +50,14 @@ QToolTip {background:#223149; color:#f4f6fa; border:1px solid #788cac;}
 from .icons import icon, NAV_ICONS
 from .panels import ReportPanel, HardwarePanel
 
+class WrappingLabel(QLabel):
+    """Reserve actual wrapped height after styling and resizing, across OS fonts."""
+    def resizeEvent(self,event):
+        super().resizeEvent(event)
+        if self.wordWrap() and self.width()>0:
+            needed=self.heightForWidth(self.width())
+            if needed>0 and needed!=self.minimumHeight():self.setMinimumHeight(needed)
+
 class Signals(QObject):
     done = Signal(object)
     failed = Signal(str)
@@ -99,8 +107,8 @@ class BaseWindow(QMainWindow):
         page=QWidget(); layout=QVBoxLayout(page); layout.setContentsMargins(0,0,0,0); layout.setSpacing(14); self.stack.addWidget(page); return layout
     def card(self,title,body):
         card=QFrame(); card.setObjectName("card"); layout=QVBoxLayout(card); layout.setContentsMargins(20,14,20,14)
-        a=QLabel(title); a.setObjectName("cardtitle"); a.setWordWrap(True); layout.addWidget(a)
-        b=QLabel(body); b.setObjectName("cardbody"); b.setWordWrap(True); layout.addWidget(b); return card,layout
+        a=WrappingLabel(title); a.setObjectName("cardtitle"); a.setWordWrap(True); layout.addWidget(a)
+        b=WrappingLabel(body); b.setObjectName("cardbody"); b.setWordWrap(True); layout.addWidget(b); return card,layout
     def button(self,layout,text,callback,primary=False,symbol=None):
         symbols={"scan_hardware":"chip","scan_devices":"chip","download_dialog":"download","select_iso":"iso","analyze_iso":"search","backup_all":"backup","backup_selected":"backup","preview_restore":"backup","export_machine":"chip","load_profile":"profile","save_profile":"profile","generate_seed":"profile","usb_preview":"usb","search_updates":"updates","analyze_logs":"search","export":"download","export_logs":"download"}
         b=QPushButton(text.replace("&","&&")); b.setIcon(icon(symbol or symbols.get(getattr(callback,"__name__",""), "check" if primary else "logs"))); b.setIconSize(QSize(20,20)); b.clicked.connect(callback)
