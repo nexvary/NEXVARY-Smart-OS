@@ -1,16 +1,16 @@
 [Setup]
 AppId=NEXVARY.SmartWindowsDriver
 AppName=Smart Windows Driver
-AppVersion=0.1.0
+AppVersion=0.2.0
 AppPublisher=NEXVARY
-SetupIconFile=..\..\ui\assets\smart-os.ico
+SetupIconFile=..\..\ui\assets\smart-windows-driver.ico
 AppPublisherURL=https://nexvary.com
 DefaultDirName={localappdata}\Programs\NEXVARY\SmartWindowsDriver
 PrivilegesRequired=lowest
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 OutputDir=..\..\dist\setup
-OutputBaseFilename=SmartWindowsDriver-0.1.0-Setup
+OutputBaseFilename=SmartWindowsDriver-0.2.0-Setup
 Compression=lzma2
 SolidCompression=yes
 [Files]

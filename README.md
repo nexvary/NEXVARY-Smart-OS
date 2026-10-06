@@ -1,3 +1,5 @@
+> **0.2.0 alpha update:** refreshed Qt UI and independent application icons; device search/network filter, offline machine-profile matching, and read-only Dual Boot preflight. See [phase 02](docs/phase-02-ui-offline.md).
+
 # SMART OS by NEXVARY
 
 Two independent desktop applications, one local safety core:

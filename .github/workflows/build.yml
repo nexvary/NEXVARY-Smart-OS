@@ -30,6 +30,8 @@ jobs:
       - name: Windows read-only hardware and Driver Store smoke test
         if: runner.os == 'Windows'
         run: python scripts/windows-readonly-smoke.py
+      - name: Capture real application UI
+        run: python scripts/capture-ui.py --scan
       - run: python scripts/build.py
       - name: Native bundle smoke checks (Linux)
         if: runner.os == 'Linux'
@@ -69,3 +71,7 @@ jobs:
         with:
           name: SmartOS-Windows-readonly-verification
           path: artifacts/verification/windows-readonly.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SmartOS-UI-${{ matrix.os }}
+          path: docs/screenshots/*.png
