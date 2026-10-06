@@ -1,7 +1,7 @@
 [Setup]
 AppId=NEXVARY.SmartLinuxInstaller
 AppName=Smart Linux Installer
-AppVersion=0.2.0
+AppVersion=0.2.1
 AppPublisher=NEXVARY
 SetupIconFile=..\..\ui\assets\smart-linux-installer.ico
 AppPublisherURL=https://nexvary.com
@@ -10,7 +10,7 @@ PrivilegesRequired=lowest
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 OutputDir=..\..\dist\setup
-OutputBaseFilename=SmartLinuxInstaller-0.2.0-Setup
+OutputBaseFilename=SmartLinuxInstaller-0.2.1-Setup
 Compression=lzma2
 SolidCompression=yes
 [Files]

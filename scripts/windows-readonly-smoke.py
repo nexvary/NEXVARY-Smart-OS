@@ -10,6 +10,8 @@ from smart_os.driver_engine.backup import backup, verify_backup, DriverSafetyErr
 from smart_os.core.readiness import dual_boot_readiness
 from smart_os.driver_engine.machine_profile import export_profile,load_profile
 
+from smart_os.driver_engine.servicing import check_health, list_drivers
+
 hardware=scan()
 devices=inventory()
 assert hardware.system=='Windows' and hardware.memory_bytes
@@ -19,6 +21,8 @@ result={'system':hardware.system,'architecture':hardware.architecture,
         'needs_review':sum(d.status=='needs-review' for d in devices),
         'hardware_ids_present':sum(bool(d.hardware_ids) for d in devices),
         'disk_scan_limitations':hardware.limitations,'driver_installation_tested':False}
+result['dism']={'health':check_health(),'drivers':list_drivers()}
+assert all(r['changes_requested'] is False and r['output'] for r in result['dism'].values())
 result['dual_boot_readiness']=dual_boot_readiness()
 assert result['dual_boot_readiness']['automatic_changes'] is False
 with tempfile.TemporaryDirectory() as folder:

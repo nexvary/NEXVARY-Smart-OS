@@ -4,47 +4,56 @@ from pathlib import Path
 from PySide6.QtCore import Qt, QObject, Signal, QRunnable, QThreadPool, QSize, QRectF, QSettings
 from PySide6.QtGui import QPainter, QPen, QColor, QIcon, QPixmap, QFont, QFontDatabase, QRawFont
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QLabel, QPushButton, QComboBox, QStackedWidget, QTextEdit, QFileDialog, QMessageBox, QFrame, QProgressBar)
+    QLabel, QPushButton, QComboBox, QStackedWidget, QTextEdit, QFileDialog, QMessageBox, QFrame, QProgressBar, QSizePolicy)
 from .. import __version__
 from ..core.logging import Journal, export_report
 
 TEXT = {
 "en": {"linux": "Smart Linux Installer", "driver": "Smart Windows Driver", "tag": "SMART OS SUITE  /  NEXVARY",
  "home": "Overview", "hardware": "Hardware", "iso": "ISO & downloads", "profile": "Install profile", "usb": "USB safety", "logs": "Diagnostics", "devices": "Devices", "backup": "Backup & restore", "updates": "Windows Update",
- "scan": "Scan hardware", "export": "Export report", "back": "Back", "about": "About", "busy": "Working…", "error": "Operation could not complete", "save": "Save", "success": "Operation completed", "alpha": "ALPHA 0.2  ·  Local first",
+ "scan": "Scan hardware", "export": "Export report", "back": "Back", "about": "About", "busy": "Working…", "error": "Operation could not complete", "save": "Save", "success": "Operation completed", "alpha": "ALPHA 0.2.1  ·  Local first",
  "review": "Review before any disk or driver operation.", "select": "Select", "analyze": "Analyze", "details": "Details", "refresh": "Refresh", "notwindows": "Run this application on Windows 10/11 x64 to inspect real Windows devices."},
 "ar": {"linux": "مثبّت Linux الذكي", "driver": "تعريفات Windows الذكية", "tag": "SMART OS SUITE  /  NEXVARY",
  "home": "الرئيسية", "hardware": "العتاد", "iso": "ISO والتنزيل", "profile": "ملف التثبيت", "usb": "أمان USB", "logs": "التشخيص", "devices": "الأجهزة", "backup": "نسخ واستعادة", "updates": "تحديثات Windows",
- "scan": "فحص العتاد", "export": "تصدير التقرير", "back": "رجوع", "about": "عن البرنامج", "busy": "جارٍ التنفيذ…", "error": "تعذّر إتمام العملية", "save": "حفظ", "success": "اكتملت العملية", "alpha": "نسخة أولية 0.2 · محلية افتراضيًا",
+ "scan": "فحص العتاد", "export": "تصدير التقرير", "back": "رجوع", "about": "عن البرنامج", "busy": "جارٍ التنفيذ…", "error": "تعذّر إتمام العملية", "save": "حفظ", "success": "اكتملت العملية", "alpha": "نسخة أولية 0.2.1 · محلية افتراضيًا",
  "review": "راجع التفاصيل قبل أي عملية على القرص أو التعريفات.", "select": "اختيار", "analyze": "تحليل", "details": "التفاصيل", "refresh": "تحديث", "notwindows": "شغّل البرنامج على Windows 10 أو 11 بمعمارية x64 لفحص أجهزته الحقيقية."}}
 
 STYLE = """
-QWidget { background:#090f19; color:#e8edf7; font-size:14px; }
-QMainWindow { background:#090f19; }
-QLabel#brand {color:#8593ab; font-size:11px; letter-spacing:2px;}
-QLabel#title {font-size:26px; font-weight:700;}
-QLabel#pageheading {font-size:17px; font-weight:600; color:#d1d9e8; padding:4px 0;}
+QWidget { background:#080d0a; color:#edf5ee; font-size:14px; }
+QMainWindow { background:#080d0a; }
+QFrame#sidebar {background:#0d1510; border:1px solid #2d3f33; border-radius:14px;}
+QLabel#brand {color:#a4b9a9; font-size:11px; letter-spacing:2px; background:transparent;}
+QLabel#title {font-size:24px; font-weight:700; color:#f0f7f1;}
+QLabel#pageheading {font-size:16px; font-weight:600; color:#86ff4a; padding:2px 0;}
 QLabel#metric {font-size:26px; font-weight:700; background:transparent;}
-QLabel#metriclabel {color:#a7b5cd; background:transparent; font-size:12px;}
-QProgressBar {border:0; background:#172337;}
-QProgressBar::chunk {background:#5f9be7;}
-QLabel#subtitle {color:#9daac0; font-size:15px;}
-QFrame#card {background:#131d2c; border:1px solid #3e4b60; border-radius:14px;}
-QLabel#cardtitle {background:transparent; font-size:20px; font-weight:600;}
-QLabel#cardbody {background:transparent; color:#adb9cf; font-size:14px;}
-QPushButton {background:#172235; border:1px solid #556277; border-radius:8px; padding:11px 15px; min-height:22px;}
-QPushButton:hover {background:#23334c; border-color:#91adcf;}
-QPushButton:pressed {background:#304769;}
-QPushButton:disabled {color:#758095; background:#151a24;}
-QPushButton#primary {background:#225caa; border-color:#6794d3; font-weight:600;}
-QPushButton#nav {text-align:left; border:0; background:transparent; padding:10px;}
-QPushButton#nav:checked {background:#21334f; border:1px solid #4b658a; color:#c3d9fa;}
-QComboBox,QLineEdit,QTextEdit,QPlainTextEdit,QSpinBox {background:#111c2d; border:1px solid #48566c; border-radius:7px; padding:9px; selection-background-color:#325d96;}
-QTableWidget {alternate-background-color:#142035; background:#111c2d; border:1px solid #46566e; border-radius:8px; gridline-color:#243249;}
-QHeaderView::section {background:#19263a; color:#b3c5df; padding:10px; border:0;}
-QScrollBar:vertical {width:9px; background:#101827;}
-QScrollBar::handle:vertical {background:#4b5d78; border-radius:4px; min-height:25px;}
-QToolTip {background:#223149; color:#f4f6fa; border:1px solid #788cac;}
+QLabel#metriclabel {color:#b2c4b7; background:transparent; font-size:12px;}
+QProgressBar {border:0; background:#1c2d21;}
+QProgressBar::chunk {background:#86ff4a;}
+QLabel#subtitle {color:#acbeb1; font-size:14px;}
+QFrame#card {background:#111c15; border:1px solid #45604e; border-radius:14px;}
+QLabel#cardtitle {background:transparent; font-size:19px; font-weight:600;}
+QLabel#cardbody {background:transparent; color:#c0cec4; font-size:14px;}
+QPushButton {background:#142119; border:1px solid #506d5a; border-radius:9px; padding:10px 14px; min-height:22px;}
+QPushButton:hover {background:#203628; border-color:#86ff4a;}
+QPushButton:pressed {background:#2a4632;}
+QPushButton:focus {border:2px solid #b5ff8e;}
+QPushButton:disabled {color:#84988a; background:#142019; border-color:#2a3a30;}
+QPushButton#primary {background:#86ff4a; color:#0b1909; border:1px solid #afff86; font-weight:700;}
+QPushButton#primary:hover {background:#a4ff77; border-color:#d2ffb9;}
+QPushButton#primary:pressed {background:#68dd32;}
+QPushButton#primary:disabled {background:#293d22; color:#a5b49e; border-color:#45583d;}
+QPushButton#back {padding:5px 12px; min-height:20px;}
+QPushButton#nav {text-align:left; border:1px solid transparent; background:transparent; padding:9px;}
+QPushButton#nav:hover {background:#1b2c20; border-color:#425747;}
+QPushButton#nav:checked {background:#233b1d; border:1px solid #86ff4a; color:#b9ff99; font-weight:600;}
+QComboBox,QLineEdit,QTextEdit,QPlainTextEdit,QSpinBox {background:#0f1912; border:1px solid #496250; border-radius:8px; padding:8px; selection-background-color:#46752f;}
+QLineEdit:focus,QComboBox:focus {border:1px solid #86ff4a;}
+QComboBox::drop-down {border:0; width:24px;}
+QTableWidget {alternate-background-color:#142319; background:#0f1912; border:1px solid #45604e; border-radius:9px; gridline-color:#293d2e; selection-background-color:#294a21;}
+QHeaderView::section {background:#1b3022; color:#c2d7c7; padding:8px; border:0;}
+QScrollBar:vertical {width:9px; background:#0f1912;}
+QScrollBar::handle:vertical {background:#597363; border-radius:4px; min-height:25px;}
+QToolTip {background:#1d3023; color:#f2fff3; border:1px solid #86ff4a;}
 """
 
 from .icons import icon, NAV_ICONS
@@ -78,19 +87,19 @@ class BaseWindow(QMainWindow):
     def t(self, key): return TEXT[self.language].get(key,key)
     def pair(self,en,ar): return ar if self.language=="ar" else en
     def build(self):
-        root=QWidget(); self.setCentralWidget(root); outer=QHBoxLayout(root); outer.setContentsMargins(22,22,22,22); outer.setSpacing(22)
-        sidebar=QVBoxLayout(); brand_icon=QLabel(); brand_icon.setPixmap(icon(self.kind,"#82b4f4").pixmap(44,44)); sidebar.addWidget(brand_icon); brand=QLabel("NEXVARY"); brand.setObjectName("cardtitle"); sidebar.addWidget(brand)
+        root=QWidget(); self.setCentralWidget(root); outer=QHBoxLayout(root); outer.setContentsMargins(18,18,18,18); outer.setSpacing(18)
+        sidebar_frame=QFrame(); sidebar_frame.setObjectName("sidebar"); sidebar_frame.setFixedWidth(204); sidebar=QVBoxLayout(sidebar_frame); sidebar.setContentsMargins(12,14,12,14); brand_icon=QLabel(); brand_icon.setStyleSheet("background:transparent;"); brand_icon.setPixmap(icon(self.kind).pixmap(40,40)); sidebar.addWidget(brand_icon); brand=QLabel("NEXVARY"); brand.setObjectName("cardtitle"); sidebar.addWidget(brand)
         sub=QLabel("SMART OS SUITE"); sub.setObjectName("brand"); sidebar.addWidget(sub); sidebar.addSpacing(12)
         self.nav={}; self.stack=QStackedWidget(); self.stack.setObjectName("pages")
         keys=["home","hardware","iso","profile","usb","logs"] if self.kind=="linux" else ["home","devices","backup","updates","hardware","logs"]
         for i,key in enumerate(keys):
-            b=QPushButton(self.t(key).replace("&","&&")); b.setObjectName("nav"); b.setCheckable(True); b.setMinimumWidth(175); b.setIcon(icon(NAV_ICONS[key])); b.setIconSize(QSize(22,22)); b.clicked.connect(lambda _,n=i:self.navigate(n)); sidebar.addWidget(b); self.nav[i]=b
+            b=QPushButton(self.t(key).replace("&","&&")); b.setObjectName("nav"); b.setCheckable(True); b.setMinimumWidth(175); b.setToolTip(self.t(key)); b.setIcon(icon(NAV_ICONS[key])); b.setIconSize(QSize(24,24)); b.clicked.connect(lambda _,n=i:self.navigate(n)); sidebar.addWidget(b); self.nav[i]=b
             if self.language=="ar":b.setStyleSheet("text-align:right;")
         sidebar.addStretch(); self.language_selector=QComboBox(); self.language_selector.addItems(["English","العربية"]); self.language_selector.setCurrentIndex(1 if self.language=="ar" else 0); self.language_selector.currentIndexChanged.connect(self.change_language); sidebar.addWidget(self.language_selector)
-        b=QPushButton(self.t("about")); b.setIcon(icon("info")); b.clicked.connect(self.about); sidebar.addWidget(b); outer.addLayout(sidebar)
-        content=QVBoxLayout(); top=QHBoxLayout(); label=QLabel(self.t("tag")); label.setObjectName("brand"); top.addWidget(label); top.addStretch(); back=QPushButton(self.t("back")); back.setIcon(icon("back")); back.clicked.connect(lambda:self.navigate(0)); top.addWidget(back); content.addLayout(top)
-        title=QLabel(self.t(self.kind)); title.setObjectName("title"); content.addWidget(title)
-        subtitle=QLabel(self.t("review")); subtitle.setObjectName("subtitle"); content.addWidget(subtitle); content.addSpacing(10); self.page_title=QLabel(); self.page_title.setObjectName("pageheading"); content.addWidget(self.page_title); content.addWidget(self.stack,1)
+        b=QPushButton(self.t("about")); b.setIcon(icon("info")); b.clicked.connect(self.about); sidebar.addWidget(b); outer.addWidget(sidebar_frame)
+        content=QVBoxLayout(); content.setSpacing(6); top=QHBoxLayout(); label=QLabel(self.t("tag")); label.setObjectName("brand"); top.addWidget(label); top.addStretch(); back=QPushButton(self.t("back")); back.setObjectName("back"); back.setIcon(icon("back")); back.clicked.connect(lambda:self.navigate(0)); top.addWidget(back); content.addLayout(top)
+        title=QLabel(self.t(self.kind)); title.setObjectName("title"); title.setSizePolicy(QSizePolicy.Preferred,QSizePolicy.Maximum); content.addWidget(title)
+        subtitle=QLabel(self.t("review")); subtitle.setObjectName("subtitle"); subtitle.setSizePolicy(QSizePolicy.Preferred,QSizePolicy.Maximum); content.addWidget(subtitle); content.addSpacing(10); self.page_title=QLabel(); self.page_title.setObjectName("pageheading"); self.page_title.setSizePolicy(QSizePolicy.Preferred,QSizePolicy.Maximum); content.addWidget(self.page_title); content.addWidget(self.stack,1)
         self.progress=QProgressBar(); self.progress.setRange(0,0); self.progress.setFixedHeight(3); self.progress.setTextVisible(False); self.progress.hide(); content.addWidget(self.progress)
         self.status=QLabel(self.t("alpha")); self.status.setObjectName("subtitle"); content.addWidget(self.status); outer.addLayout(content,1)
         self.setLayoutDirection(Qt.RightToLeft if self.language=="ar" else Qt.LeftToRight)
@@ -111,7 +120,8 @@ class BaseWindow(QMainWindow):
         b=WrappingLabel(body); b.setObjectName("cardbody"); b.setWordWrap(True); layout.addWidget(b); return card,layout
     def button(self,layout,text,callback,primary=False,symbol=None):
         symbols={"scan_hardware":"chip","scan_devices":"chip","download_dialog":"download","select_iso":"iso","analyze_iso":"search","backup_all":"backup","backup_selected":"backup","preview_restore":"backup","export_machine":"chip","load_profile":"profile","save_profile":"profile","generate_seed":"profile","usb_preview":"usb","search_updates":"updates","analyze_logs":"search","export":"download","export_logs":"download"}
-        b=QPushButton(text.replace("&","&&")); b.setIcon(icon(symbol or symbols.get(getattr(callback,"__name__",""), "check" if primary else "logs"))); b.setIconSize(QSize(20,20)); b.clicked.connect(callback)
+        symbol=symbol or ("iso" if text==self.t("iso") else "backup" if text==self.t("backup") else symbols.get(getattr(callback,"__name__",""), "check" if primary else "logs"))
+        b=QPushButton(text.replace("&","&&")); b.setIcon(icon(symbol, "#14200d" if primary else None)); b.setIconSize(QSize(20,20)); b.clicked.connect(callback)
         if primary:b.setObjectName("primary")
         layout.addWidget(b); return b
     def text_panel(self,layout):

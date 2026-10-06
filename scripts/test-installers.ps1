@@ -1,6 +1,6 @@
 $ErrorActionPreference = 'Stop'
 foreach ($Name in @('SmartLinuxInstaller', 'SmartWindowsDriver')) {
-    $Setup = Join-Path $PSScriptRoot "..\dist\setup\$Name-0.2.0-Setup.exe"
+    $Setup = Join-Path $PSScriptRoot "..\dist\setup\$Name-0.2.1-Setup.exe"
     $Destination = Join-Path $env:RUNNER_TEMP "SmartOS-Setup-Test\$Name"
     $Arguments = @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/DIR=`"$Destination`"")
     $Process = Start-Process $Setup -ArgumentList $Arguments -Wait -PassThru

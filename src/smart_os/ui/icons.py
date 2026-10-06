@@ -26,11 +26,18 @@ PATHS = {
 }
 NAV_ICONS = {'hardware':'chip', 'devices':'chip', 'logs':'logs', 'home':'home', 'iso':'iso', 'profile':'profile', 'usb':'usb', 'backup':'backup', 'updates':'updates'}
 
-def svg(kind, color='#b6c5db'):
-    body=PATHS.get(kind, PATHS['logs']).replace('{bg}', '#101b2b')
+COLORS = {'home':'#86ff4a','chip':'#b995ff','disk':'#ffd06b','iso':'#5bc9ff',
+          'shield':'#86ff4a','download':'#46e8bd','backup':'#ffbb62','usb':'#45e8df',
+          'logs':'#ff8bbf','profile':'#b995ff','updates':'#5bafff','network':'#45e8df',
+          'search':'#5bc9ff','back':'#c5d5cc','info':'#80bcff','check':'#86ff4a',
+          'warning':'#ffd06b','linux':'#86ff4a','driver':'#45e8df'}
+
+def svg(kind, color=None):
+    color=color or COLORS.get(kind,'#c5d5cc')
+    body=PATHS.get(kind, PATHS['logs']).replace('{bg}', '#101a14')
     return f'<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><g fill="none" stroke="{color}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{body}</g></svg>'
 
-def icon(kind, color='#b6c5db'):
+def icon(kind, color=None):
     renderer=QSvgRenderer(QByteArray(svg(kind,color).encode())); result=QIcon()
     for size in (24,32,48,64,128,256):
         pixmap=QPixmap(size,size); pixmap.fill(Qt.transparent)

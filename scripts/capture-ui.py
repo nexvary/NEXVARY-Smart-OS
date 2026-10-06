@@ -20,4 +20,8 @@ for cls in (LinuxWindow,DriverWindow):
         window.grab().save(str(output/f'{cls.__name__}-{language}.png')); 
         if '--scan' in sys.argv and cls is DriverWindow:
             window.navigate(1); app.processEvents(); window.grab().save(str(output/f'DriverDevices-{language}.png'))
+        if cls is DriverWindow:
+            window.navigate(5); app.processEvents(); window.grab().save(str(output/f'WindowsServicing-{language}.png'))
+        elif cls is LinuxWindow:
+            window.navigate(2); app.processEvents(); window.grab().save(str(output/f'LinuxISO-{language}.png'))
         window.close()

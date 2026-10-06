@@ -1,4 +1,4 @@
-> **0.2.0 alpha update:** refreshed Qt UI and independent application icons; device search/network filter, offline machine-profile matching, and read-only Dual Boot preflight. See [phase 02](docs/phase-02-ui-offline.md).
+> **0.2.1 alpha update:** neon green interface, colored section/application icons, compact header and read-only Microsoft DISM tools. See [Windows servicing](docs/windows-servicing.md).
 
 # SMART OS by NEXVARY
 
@@ -7,7 +7,7 @@ Two independent desktop applications, one local safety core:
 - **Smart Linux Installer**: hardware inspection, ISO structure and SHA256 analysis, official HTTPS download, saved profiles, Ubuntu/Debian/Kali preparation seeds, disk/USB safety previews and installer log diagnosis.
 - **Smart Windows Driver**: Windows PnP inventory, Hardware/Compatible IDs, Device Manager problem codes, driver inspection, PnPUtil OEM backups, backup integrity checks, local INF matching preview and read-only Windows Update driver search.
 
-**0.1.0-alpha.1 is a preparation and inspection prototype, not a finished installer or driver updater.** Nothing in this release proves successful operating-system installation or Windows driver restoration. Driver installation is deliberately blocked pending native package signature/catalog checks, OS-decorated INF evaluation, a narrow elevation broker, recovery and Windows VM validation.
+**0.2.1-alpha.1 is a preparation and inspection prototype, not a finished installer or driver updater.** Nothing in this release proves successful operating-system installation or Windows driver restoration. Driver installation is deliberately blocked pending native package signature/catalog checks, OS-decorated INF evaluation, a narrow elevation broker, recovery and Windows VM validation.
 
 ## Run from source
 

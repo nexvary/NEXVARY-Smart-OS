@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nexvary-smart-os"
-version = "0.2.0"
+version = "0.2.1"
 description = "Independent OS preparation and Windows driver applications"
 requires-python = ">=3.11"
 dependencies = ["PySide6==6.8.3"]

@@ -50,7 +50,7 @@ class ReportPanel(QTextBrowser):
                 for key,val in data.items():
                     if key=='serial':continue
                     content=render(val,depth+1) if isinstance(val,(dict,list,tuple)) else escape(value_text(val,language,key))
-                    rows.append(f'<tr><td width="28%" style="color:#9fb2cf;padding:8px">{escape(label(key,language))}</td><td style="padding:8px"><span dir="auto">{content}</span></td></tr>')
+                    rows.append(f'<tr><td width="28%" style="color:#a9c6b0;padding:8px">{escape(label(key,language))}</td><td style="padding:8px"><span dir="auto">{content}</span></td></tr>')
                 return '<table width="100%" cellspacing="0">'+''.join(rows)+'</table>'
             if isinstance(data,(list,tuple)):
                 if not data:return 'لا توجد عناصر' if language=='ar' else 'No items'
@@ -59,7 +59,7 @@ class ReportPanel(QTextBrowser):
                 return result
             return escape(value_text(data,language))
         direction='rtl' if language=='ar' else 'ltr'
-        self.setHtml(f'<html><body dir="{direction}" style="font-family:Noto Sans Arabic,sans-serif;font-size:13px;color:#e8edf7">{render(value)}</body></html>')
+        self.setHtml(f'<html><body dir="{direction}" style="font-family:Noto Sans Arabic,sans-serif;font-size:13px;color:#edf5ee">{render(value)}</body></html>')
 
 def metrics(layout,items):
     row=QHBoxLayout(); result=[]

@@ -10,6 +10,7 @@ from PySide6.QtGui import QColor
 from .driver_engine.inventory import inventory, windows_update_drivers
 from .driver_engine.backup import backup, restore_preview
 from .core.hardware import scan
+from .driver_engine.servicing import check_health, list_drivers, image_info
 from .driver_engine.machine_profile import export_profile, load_profile
 
 class DriverWindow(BaseWindow):
@@ -23,7 +24,7 @@ class DriverWindow(BaseWindow):
         if selected>=0:self.device_table.selectRow(selected)
     def populate(self):
         p=self.page(); card,c=self.card(self.pair("Know every device","اعرف كل جهاز"),self.pair("Inspect real PnP IDs and Device Manager error codes. Back up third-party drivers before formatting Windows. Newer versions are not automatically better.","افحص معرّفات PnP وأكواد أخطاء إدارة الأجهزة. انسخ تعريفات الجهات الخارجية قبل تهيئة Windows. رقم إصدار أعلى لا يعني أنه الأنسب.")); p.addWidget(card)
-        self.counts=metrics(p,[(self.pair("Devices","الأجهزة"),"—","#d3deef"),(self.pair("Missing drivers","تعريفات ناقصة"),"—","#e7b365"),(self.pair("Needs review","تحتاج مراجعة"),"—","#dc8b8b")])
+        self.counts=metrics(p,[(self.pair("Devices","الأجهزة"),"—","#c5e4d0"),(self.pair("Missing drivers","تعريفات ناقصة"),"—","#e7b365"),(self.pair("Needs review","تحتاج مراجعة"),"—","#dc8b8b")])
         self.summary=QLabel(self.pair("No scan yet — no estimated or simulated results.","لم يُنفّذ فحص بعد؛ لا نعرض نتائج تقديرية أو وهمية.")); self.summary.setObjectName("subtitle"); self.summary.setWordWrap(True); p.addWidget(self.summary)
         row=QHBoxLayout(); b=self.button(row,self.pair("Scan devices","فحص الأجهزة"),self.scan_devices,True); b.setEnabled(platform.system()=="Windows"); self.button(row,self.t("backup"),lambda:self.navigate(2)); p.addLayout(row)
         card,c=self.card(self.pair("Restore begins with a review","الاستعادة تبدأ بالمراجعة"),self.pair("Verified backup matching is available. Driver installation awaits signature, system compatibility and rollback validation.","مطابقة النسخ الاحتياطية متاحة. تثبيت التعريفات ينتظر اكتمال التحقق من التوقيع والتوافق والتراجع.")); p.addWidget(card)
@@ -40,7 +41,11 @@ class DriverWindow(BaseWindow):
         b=self.button(p,self.pair("Search driver updates","بحث تحديثات التعريفات"),self.search_updates,True); b.setEnabled(platform.system()=="Windows"); self.update_panel=self.text_panel(p)
         p=self.page(); row=QHBoxLayout(); self.button(row,self.t("scan"),self.scan_hardware,True); self.button(row,self.t("export"),self.export); p.addLayout(row); self.hardware_panel=self.hardware_view(p)
         if self.hardware:self.show_json(self.hardware_panel,self.hardware.to_dict())
-        p=self.page(); self.button(p,self.pair("Export activity log","تصدير سجل العمليات"),self.export_logs); self.log_panel=self.text_panel(p)
+        p=self.page(); card,c=self.card(self.pair("Windows servicing · Microsoft DISM","خدمة Windows · Microsoft DISM"),self.pair("Read-only tools: check existing corruption flags, list OEM drivers, or inspect a WIM/ESD image. DISM needs administrator permission. CheckHealth is not a full scan or repair.","أدوات للقراءة: فحص مؤشرات التلف المسجلة، عرض تعريفات OEM، وتحليل صور WIM/ESD. تتطلب DISM صلاحية المسؤول. CheckHealth لا يجري فحصًا شاملًا أو إصلاحًا.")); p.addWidget(card)
+        row=QHBoxLayout()
+        for text,callback,symbol in [(self.pair("Check Windows health","فحص حالة Windows"),self.check_windows_health,"shield"),(self.pair("List DISM drivers","تعريفات DISM"),self.inspect_dism_drivers,"driver"),(self.pair("Inspect WIM / ESD","تحليل WIM / ESD"),self.inspect_windows_image,"iso")]:
+            b=self.button(row,text,callback,symbol=symbol); b.setEnabled(platform.system()=="Windows")
+        p.addLayout(row); exports=QHBoxLayout(); self.button(exports,self.pair("Export activity log","تصدير سجل العمليات"),self.export_logs); self.button(exports,self.t("export"),self.export); p.addLayout(exports); self.log_panel=self.text_panel(p)
         self.log_panel.setPlainText(self.pair("Logs stay on this computer. Diagnostic exports redact hardware identifiers, serials and credentials. Device details remain visible locally.","السجلات محلية. تُحجب معرّفات العتاد والأرقام التسلسلية وبيانات الدخول من التقارير المصدّرة. تفاصيل الأجهزة ظاهرة محليًا."))
         self.render_devices()
     def render_devices(self):
@@ -48,7 +53,7 @@ class DriverWindow(BaseWindow):
         for row,d in enumerate(self.devices):
             for col,text in enumerate([d.name,self.device_status(d.status),str(d.problem_code),d.version,d.driver_inf]):
                 item=QTableWidgetItem(text); item.setToolTip(text); self.device_table.setItem(row,col,item)
-                if col==1:item.setForeground(QColor("#e7b365" if d.status=="missing" else "#dc8b8b" if d.status=="needs-review" else "#76c5a6"))
+                if col==1:item.setForeground(QColor("#e7b365" if d.status=="missing" else "#dc8b8b" if d.status=="needs-review" else "#86ff4a"))
         if self.devices:
             missing=sum(d.status=="missing" for d in self.devices); review=sum(d.status=="needs-review" for d in self.devices)
             for widget,count in zip(self.counts,[len(self.devices),missing,review]):widget.setText(str(count))
@@ -106,6 +111,15 @@ class DriverWindow(BaseWindow):
     def scan_hardware(self):
         def done(hardware):self.hardware=hardware; self.report["hardware"]=hardware.to_dict(); self.show_json(self.hardware_panel,hardware.to_dict())
         self.async_task("hardware-scan",scan,done)
+    def servicing_done(self,result):
+        self.report['servicing']=result; self.show_json(self.log_panel,result)
+    def check_windows_health(self):
+        self.async_task('dism-check-health',check_health,self.servicing_done)
+    def inspect_dism_drivers(self):
+        self.async_task('dism-driver-inspection',list_drivers,self.servicing_done)
+    def inspect_windows_image(self):
+        path,_=QFileDialog.getOpenFileName(self,self.pair("Choose Windows image","اختر صورة Windows"),"","Windows image (*.wim *.esd)")
+        if path:self.async_task('dism-image-inspection',lambda:image_info(Path(path)),self.servicing_done)
     def export_logs(self):
         path,_=QFileDialog.getSaveFileName(self,self.t("save"),"smart-driver-activity.jsonl")
         if path:self.journal.export(Path(path))
