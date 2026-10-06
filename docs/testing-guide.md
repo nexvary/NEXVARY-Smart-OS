@@ -15,4 +15,4 @@ Required integration matrix before a release:
 7. Physical USB removable classification, mounted disks, hotplug/replacement, partial write/readback mismatch.
 8. Real desktop keyboard navigation, 100/150/200% DPI, Arabic text/mixed Hardware IDs and no clipped content.
 
-Remote Windows Actions, VM installs, raw USB media, other distribution downloads and driver installation were not tested in this initial delivery. Never merge these into the count of passing local unit cases.
+Remote Windows Actions now passed: unit tests, native builds, Setup installation/launch/uninstall, PnP inventory and Driver Store OEM export. Full OS VM installs, raw USB media, other distribution downloads, Windows Update queries and actual driver installation remain untested. Never merge these into the count of passing local unit cases.

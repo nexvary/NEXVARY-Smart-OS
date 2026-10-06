@@ -44,7 +44,7 @@ python scripts/build.py
 
 PyInstaller emits `dist/SmartLinuxInstaller/` and `dist/SmartWindowsDriver/` separately. Build on the target OS. A Linux ELF is never relabeled as a Windows EXE. Keep each executable beside its `_internal` folder. Ubuntu may need `libxcb-cursor0` and normal Qt xcb system libraries for a graphical desktop. Qt offscreen testing does not prove all desktop dependencies are installed.
 
-The GitHub Actions file prepares Linux and Windows native builds. It has **not run remotely** in this initial delivery; the new GitHub repository has not been created. Local git branch: `dev/foundation`.
+The repository is `nexvary/NEXVARY-Smart-OS`, branch `dev/foundation`. GitHub Actions run 37394820275 passed on Ubuntu 24.04 and Windows Server 2022: 47 tests per OS, native builds, Qt bundle launch checks, real Windows PnP inventory/OEM export, and separate Setup install-launch-uninstall tests. Windows 10/11 physical devices and driver installation/rollback are still untested. See `docs/windows-build-verification.md`.
 
 ## CLI
 
