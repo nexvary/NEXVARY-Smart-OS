@@ -2,7 +2,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from PySide6.QtCore import Qt, QObject, Signal, QRunnable, QThreadPool, QSize, QRectF, QSettings
-from PySide6.QtGui import QPainter, QPen, QColor, QIcon, QPixmap, QFont
+from PySide6.QtGui import QPainter, QPen, QColor, QIcon, QPixmap, QFont, QFontDatabase, QRawFont
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QPushButton, QComboBox, QStackedWidget, QTextEdit, QFileDialog, QMessageBox, QFrame, QProgressBar)
 from .. import __version__
@@ -142,4 +142,14 @@ class BaseWindow(QMainWindow):
         else:event.accept()
 
 def application():
-    app=QApplication.instance() or QApplication([]); app.setStyle("Fusion"); app.setStyleSheet(STYLE); return app
+    app=QApplication.instance() or QApplication([])
+    if not app.property("smartOsFontLoaded"):
+        source=Path(__file__).parent/"assets"/"NotoSansArabic.ttf"
+        font_id=QFontDatabase.addApplicationFont(str(source))
+        families=QFontDatabase.applicationFontFamilies(font_id)
+        if not families:raise RuntimeError("Bundled UI font could not load")
+        font=QFont(families[0],10); app.setFont(font)
+        raw=QRawFont.fromFont(font)
+        if any(index==0 for index in raw.glyphIndexesForString("SMART OS العربية 0123456789")):raise RuntimeError("Bundled UI font lacks Arabic or Latin glyphs")
+        app.setProperty("smartOsFontLoaded",True)
+    app.setStyle("Fusion"); app.setStyleSheet(STYLE); return app

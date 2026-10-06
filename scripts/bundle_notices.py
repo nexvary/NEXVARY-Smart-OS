@@ -19,3 +19,4 @@ for name in ['SmartLinuxInstaller','SmartWindowsDriver']:
     for source in (root/'docs'/'licenses').glob('*.txt'):shutil.copy2(source,notices/source.name)
     shutil.copy2(root/'docs'/'third-party.md',notices/'README.md')
     shutil.copy2(root/'LICENSE',bundle/'LICENSE')
+    shutil.copy2(root/'src/smart_os/ui/assets/OFL-NotoSansArabic.txt',notices/'OFL-NotoSansArabic.txt')

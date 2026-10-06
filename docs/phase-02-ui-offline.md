@@ -3,7 +3,7 @@
 Two applications remain independent. This release improves the actual Qt desktop applications, not an HTML mockup.
 
 - Original SVG interface icons render at multiple resolutions. Linux preparation and Windows drivers have distinct application and Setup icons.
-- Dark navy surfaces, silver borders, readable report tables, hardware disk table, state colors and honest unscanned dashboard counts.
+- Bundled Noto Sans Arabic provides verified Arabic and Latin glyphs even when Windows offscreen has no usable system fonts. Font license is included. Dark navy surfaces, silver borders, readable report tables, hardware disk table, state colors and honest unscanned dashboard counts.
 - Arabic RTL and English; selected language persists. Profile fields, ISO selection, report results, device filters and selected device survive language changes.
 - Device search uses names, manufacturer and Hardware/Compatible IDs. Missing, review and network filters use the real inventory. Network rescue is an inspection filter; it does not yet download or install drivers.
 - Machine profile export is explicit and local, includes Hardware/Compatible IDs for portable matching, and omits instance IDs and serial numbers. Another computer can load this x64 profile and match a verified local driver backup. No online retrieval is implemented.

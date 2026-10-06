@@ -8,3 +8,6 @@ https://doc.qt.io/qtforpython-6/licenses.html
 https://code.qt.io/cgit/pyside/pyside-setup.git/
 
 The official Debian ISO used for analysis is not included in application bundles or source delivery. No firmware or driver packages are redistributed in this alpha.
+
+## Bundled UI font
+Noto Sans Arabic from https://github.com/google/fonts/tree/main/ofl/notosansarabic, unmodified under SIL Open Font License 1.1. License is bundled beside the font and copied into THIRD-PARTY-LICENSES.

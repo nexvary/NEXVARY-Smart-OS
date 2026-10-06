@@ -59,14 +59,14 @@ class ReportPanel(QTextBrowser):
                 return result
             return escape(value_text(data,language))
         direction='rtl' if language=='ar' else 'ltr'
-        self.setHtml(f'<html><body dir="{direction}" style="font-family:Segoe UI,sans-serif;font-size:13px;color:#e8edf7">{render(value)}</body></html>')
+        self.setHtml(f'<html><body dir="{direction}" style="font-family:Noto Sans Arabic,sans-serif;font-size:13px;color:#e8edf7">{render(value)}</body></html>')
 
 def metrics(layout,items):
     row=QHBoxLayout(); result=[]
     for title,value,color in items:
         card=QFrame(); card.setObjectName('card'); col=QVBoxLayout(card); col.setContentsMargins(16,12,16,12)
         number=QLabel(str(value)); number.setObjectName('metric'); number.setStyleSheet(f'color:{color}'); number.setLayoutDirection(Qt.LeftToRight)
-        caption=QLabel(title); caption.setObjectName('metriclabel'); caption.setWordWrap(True)
+        caption=QLabel(title); caption.setObjectName('metriclabel'); caption.setWordWrap(True); caption.setMinimumHeight(32)
         col.addWidget(number); col.addWidget(caption); row.addWidget(card,1); result.append(number)
     layout.addLayout(row); return result
 

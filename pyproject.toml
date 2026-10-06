@@ -20,3 +20,6 @@ smart-os = "smart_os.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+"smart_os.ui" = ["assets/*.ttf", "assets/*.txt"]

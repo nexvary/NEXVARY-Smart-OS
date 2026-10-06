@@ -39,3 +39,7 @@ class DesktopTests(unittest.TestCase):
                 for label in w.stack.currentWidget().findChildren(QLabel):
                     if label.isVisible() and label.wordWrap():self.assertLessEqual(label.heightForWidth(label.width()),label.height()+2,label.text())
                 w.close()
+    def test_bundled_font_has_arabic_latin_and_digits(self):
+        from PySide6.QtGui import QRawFont
+        glyphs=QRawFont.fromFont(self.app.font()).glyphIndexesForString('NEXVARY العربية 0123456789')
+        self.assertTrue(glyphs); self.assertNotIn(0,glyphs)
