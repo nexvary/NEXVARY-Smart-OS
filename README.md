@@ -78,4 +78,3 @@ Do not run the entire GUI as root. Raw USB writing is experimental and **not tes
 - OEM online connectors, curated offline packs, Network Rescue installation, rollback, restore points, auto repair and checkpoints remain future implementation.
 
 See [verification](docs/verification.md), [architecture](docs/architecture.md), [security](docs/security-model.md), [recovery](docs/recovery-model.md) and [testing](docs/testing-guide.md).
-
