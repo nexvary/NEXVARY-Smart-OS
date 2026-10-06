@@ -43,3 +43,8 @@ class DesktopTests(unittest.TestCase):
         from PySide6.QtGui import QRawFont
         glyphs=QRawFont.fromFont(self.app.font()).glyphIndexesForString('NEXVARY العربية 0123456789')
         self.assertTrue(glyphs); self.assertNotIn(0,glyphs)
+    def test_device_details_do_not_use_space_before_selection(self):
+        from smart_os.driver_engine.inventory import Device
+        w=DriverWindow('en'); self.assertTrue(w.device_panel.isHidden())
+        w.devices=[Device('id','Wi-Fi','OEM','Net',('PCI\\VEN_1234',),(),28)]; w.render_devices(); w.device_table.selectRow(0)
+        self.assertFalse(w.device_panel.isHidden()); self.assertIn('Wi-Fi',w.device_panel.toPlainText()); w.close()
