@@ -1,4 +1,4 @@
-> **0.2.1 alpha update:** neon green interface, colored section/application icons, compact header and read-only Microsoft DISM tools. See [Windows servicing](docs/windows-servicing.md).
+> **0.2.1 alpha update:** neon green interface, colored section/application icons, compact header and read-only Microsoft DISM tools. See [verified release](docs/phase-03-neon-servicing.md) and [Windows servicing](docs/windows-servicing.md).
 
 # SMART OS by NEXVARY
 
@@ -46,7 +46,7 @@ python scripts/build.py
 
 PyInstaller emits `dist/SmartLinuxInstaller/` and `dist/SmartWindowsDriver/` separately. Build on the target OS. A Linux ELF is never relabeled as a Windows EXE. Keep each executable beside its `_internal` folder. Ubuntu may need `libxcb-cursor0` and normal Qt xcb system libraries for a graphical desktop. Qt offscreen testing does not prove all desktop dependencies are installed.
 
-The repository is `nexvary/NEXVARY-Smart-OS`, branch `dev/foundation`. GitHub Actions run 37394820275 passed on Ubuntu 24.04 and Windows Server 2022: 47 tests per OS, native builds, Qt bundle launch checks, real Windows PnP inventory/OEM export, and separate Setup install-launch-uninstall tests. Windows 10/11 physical devices and driver installation/rollback are still untested. See `docs/windows-build-verification.md`.
+The repository is `nexvary/NEXVARY-Smart-OS`, branch `dev/foundation`. [GitHub Actions run 37431450846](https://github.com/nexvary/NEXVARY-Smart-OS/actions/runs/37431450846) passed on Ubuntu 24.04 and Windows Server 2022: 64 tests per OS, native builds, Qt bundle launch checks, real Windows PnP inventory/OEM export, DISM CheckHealth/Get-Drivers, and separate Setup install-launch-uninstall tests. Windows 10/11 physical devices and driver installation/rollback are still untested. See [0.2.1 verification](docs/phase-03-neon-servicing.md).
 
 ## CLI
 
