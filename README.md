@@ -1,4 +1,4 @@
-> **0.3.0 alpha:** native Windows driver signature/catalog/compatibility review and a one-operation UAC helper for OEM backup and DISM inspection. See [preflight and elevation](docs/windows-preflight.md).
+> **0.3.0 alpha:** native Windows driver signature/catalog/compatibility review and a one-operation UAC helper for OEM backup and DISM inspection. See [verified milestone](docs/phase-04-native-preflight.md) and [preflight and elevation](docs/windows-preflight.md).
 
 # SMART OS by NEXVARY
 
@@ -46,7 +46,7 @@ python scripts/build.py
 
 PyInstaller emits `dist/SmartLinuxInstaller/` and `dist/SmartWindowsDriver/` separately. Build on the target OS. A Linux ELF is never relabeled as a Windows EXE. Keep each executable beside its `_internal` folder. Ubuntu may need `libxcb-cursor0` and normal Qt xcb system libraries for a graphical desktop. Qt offscreen testing does not prove all desktop dependencies are installed.
 
-The repository is `nexvary/NEXVARY-Smart-OS`, branch `dev/foundation`. [GitHub Actions run 37431450846](https://github.com/nexvary/NEXVARY-Smart-OS/actions/runs/37431450846) passed on Ubuntu 24.04 and Windows Server 2022: 64 tests per OS, native builds, Qt bundle launch checks, real Windows PnP inventory/OEM export, DISM CheckHealth/Get-Drivers, and separate Setup install-launch-uninstall tests. Windows 10/11 physical devices and driver installation/rollback are still untested. See [0.2.1 verification](docs/phase-03-neon-servicing.md).
+The repository is `nexvary/NEXVARY-Smart-OS`, branch `dev/foundation`. [Actions run 37511580427](https://github.com/nexvary/NEXVARY-Smart-OS/actions/runs/37511580427) passed on Ubuntu 24.04 and Windows Server 2022: 79 tests per OS, independent native builds, actual OEM export and native trust/compatibility inspection, modified-payload rejection, helper RPC and two Setup install-launch-uninstall tests. [Verification](docs/phase-04-native-preflight.md) separates these checks from untested interactive UAC, physical Windows 10/11 and active driver mutation.
 
 ## CLI
 
