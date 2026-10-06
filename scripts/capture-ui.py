@@ -25,6 +25,9 @@ for cls in (LinuxWindow,DriverWindow):
                 import json
                 verified=json.loads(Path('artifacts/verification/windows-readonly.json').read_text(encoding='utf-8'))
                 window.servicing_done(verified['dism']['health'])
+            if '--scan' in sys.argv and platform.system()=='Windows' and verified.get('driver_review'):
+                window.show_json(window.backup_panel,verified['driver_review']);window.navigate(2);app.processEvents()
+                window.grab().save(str(output/f'DriverPreflight-{language}.png'))
             window.navigate(5); app.processEvents(); window.grab().save(str(output/f'WindowsServicing-{language}.png'))
         elif cls is LinuxWindow:
             window.navigate(2); app.processEvents(); window.grab().save(str(output/f'LinuxISO-{language}.png'))

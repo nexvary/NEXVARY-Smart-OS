@@ -14,6 +14,7 @@ from smart_os.driver_engine.servicing import check_health, list_drivers
 from smart_os.core.elevation import request_operation
 from smart_os.driver_engine.native import verify_package, compatible_drivers, Signer, DeviceInfo, DriverInfo, InstallParams, TrustData
 from smart_os.driver_engine.matching import parse_inf, rank
+from smart_os.driver_engine.preflight import review_driver
 import ctypes
 
 hardware=scan()
@@ -41,7 +42,7 @@ with tempfile.TemporaryDirectory() as folder:
         verified=verify_backup(directory)
         assert any(file.suffix.lower()=='.inf' for file in verified)
         result['driver_backup']={'state':'passed','export':exported,'verified_files':len(verified)}
-        audits=[]; native_matches=0
+        audits=[]; native_matches=0; review_result=None
         for inf in (p for p in verified if p.suffix.lower()=='.inf'):
             candidate=parse_inf(inf); trust=verify_package(inf,candidate.catalog)
             audits.append({'inf':inf.name,'trust':trust.to_dict()})
@@ -49,10 +50,17 @@ with tempfile.TemporaryDirectory() as folder:
                 for device in devices:
                     if rank(device,[candidate])[0].score:
                         matches=compatible_drivers(inf,device.instance_id)
-                        if matches:native_matches+=1;break
+                        if matches:
+                            native_matches+=1
+                            if review_result is None or device.class_name.casefold()=='net':
+                                review_result=review_driver(inf,device)
+                            break
         assert any(a['trust']['verified'] for a in audits), audits
         assert native_matches, 'No actual Windows-compatible OEM driver found'
         result['native_driver_preflight']={'packages':audits,'native_compatible_packages':native_matches}
+        assert review_result and review_result['trust_verified'] and review_result['native_compatible']
+        assert review_result['installation']=='blocked-in-alpha'
+        result['driver_review']=review_result
         # Tamper a COPY of a trusted package. Never alter Driver Store or devices.
         import shutil
         trusted=next(p for p in verified if p.suffix.lower()=='.inf' and any(a['inf']==p.name and a['trust']['verified'] for a in audits))

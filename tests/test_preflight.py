@@ -38,7 +38,7 @@ class PreflightTests(unittest.TestCase):
     def test_review_digest_binds_payload_and_device_and_remains_gated(self):
         with patch.object(preflight,'verify_package',return_value=TrustResult(True)),patch.object(preflight,'compatible_drivers',return_value=[{'native_rank':1}]):
             a=preflight.review_driver(self.inf,self.device)
-            self.assertTrue(a['preflight_passed']);self.assertEqual(a['installation'],'blocked-in-alpha');self.assertNotIn('commands',a)
+            self.assertTrue(a['preflight_passed']);self.assertEqual(a['match'],'Exact hardware ID');self.assertEqual(a['installation'],'blocked-in-alpha');self.assertNotIn('commands',a)
             b=preflight.review_driver(self.inf,replace(self.device,instance_id='different-local-id'))
             self.assertNotEqual(a['plan_digest'],b['plan_digest'])
             (self.inf.parent/'payload.sys').write_bytes(b'mutated')

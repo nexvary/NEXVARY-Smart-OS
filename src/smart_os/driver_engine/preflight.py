@@ -10,6 +10,18 @@ from .native import verify_package, compatible_drivers
 from ..core.integrity import sha256
 
 
+def package_hashes(directory:Path)->dict:
+    files={};total=0
+    for path in sorted(directory.rglob('*')):
+        if path.is_symlink() or getattr(path.stat(),'st_file_attributes',0)&0x400:
+            raise ValueError('Driver package contains a link or reparse point')
+        if not path.is_file():continue
+        total+=path.stat().st_size
+        if len(files)>=4096 or total>2*1024**3:raise ValueError('Driver package exceeds review size limits')
+        files[path.relative_to(directory).as_posix()]=sha256(path)
+    return files
+
+
 def review_driver(inf:Path,device:Device)->dict:
     inf=Path(inf).resolve(strict=True)
     candidate=parse_inf(inf)
@@ -19,16 +31,17 @@ def review_driver(inf:Path,device:Device)->dict:
             'recovery':{'backup_required':bool(device.driver_inf),'restore_point':'not-created','rollback':'not-validated'}}
     if not basic.score:
         result['reason']=basic.reason;return result
-    before={p.relative_to(inf.parent).as_posix():sha256(p) for p in sorted(inf.parent.rglob('*')) if p.is_file()}
+    before=package_hashes(inf.parent)
     trust=verify_package(inf,candidate.catalog);result['trust']=trust.to_dict();result['trust_verified']=trust.verified
     if not trust.verified:result['reason']=trust.reason;return result
+    result['match']=rank(device,[replace(candidate,signature_verified=True)])[0].reason
     native=compatible_drivers(inf,device.instance_id);result['native_candidates']=native;result['native_compatible']=bool(native)
     exact=bool({x.upper() for x in device.hardware_ids}&set(candidate.hardware_ids))
     if not exact:result['reason']='Compatible ID only; explicit OEM review is required';return result
     if not native:result['reason']='Windows found no compatible driver for the current OS and device';return result
     if device.class_name.casefold() in {'firmware','system','scsiadapter','hdc','securitydevices'}:
         result['reason']='Sensitive driver class needs a separately validated recovery workflow';return result
-    files={p.relative_to(inf.parent).as_posix():sha256(p) for p in sorted(inf.parent.rglob('*')) if p.is_file()}
+    files=package_hashes(inf.parent)
     if files!=before:
         result['reason']='Driver package changed during review; review again';return result
     payload={'inf':inf.name,'instance_id':device.instance_id,'current_inf':device.driver_inf,'current_version':device.version,'files':files}
