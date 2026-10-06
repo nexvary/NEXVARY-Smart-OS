@@ -31,7 +31,7 @@ class DriverTests(unittest.TestCase):
             with self.assertRaises(ValueError):parse_inf(p)
     def test_backup_tamper_detection(self):
         with tempfile.TemporaryDirectory() as t:
-            root=Path(t); p=root/'d.inf'; p.write_bytes(b'driver'); m={'schema_version':1,'kind':'smart-driver-backup','files':{'d.inf':sha256(p)}}; (root/'smart-driver-manifest.json').write_text(json.dumps(m)); self.assertEqual(verify_backup(root),[p]); p.write_bytes(b'evil')
+            root=Path(t); p=root/'d.inf'; p.write_bytes(b'driver'); m={'schema_version':1,'kind':'smart-driver-backup','files':{'d.inf':sha256(p)}}; (root/'smart-driver-manifest.json').write_text(json.dumps(m)); self.assertEqual(verify_backup(root),[p.resolve()]); p.write_bytes(b'evil')
             with self.assertRaises(DriverSafetyError):verify_backup(root)
     def test_backup_path_escape(self):
         with tempfile.TemporaryDirectory() as t:
@@ -45,3 +45,4 @@ class DriverTests(unittest.TestCase):
             with self.assertRaises(DriverSafetyError):backup(Path(t)/'b','oem1.inf & shutdown /s')
     def test_json_shapes(self):self.assertEqual(json_rows('{"a":1}'),[{'a':1}]); self.assertEqual(json_rows('[]'),[])
     def test_ps_literal(self):self.assertEqual(ps_literal("a'b;$(evil)"),"'a''b;$(evil)'")
+
