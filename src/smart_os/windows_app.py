@@ -12,6 +12,8 @@ from .driver_engine.backup import backup, restore_preview
 from .core.hardware import scan
 from .driver_engine.servicing import check_health, list_drivers, image_info
 from .driver_engine.machine_profile import export_profile, load_profile
+from .core.elevation import request_operation
+from .driver_engine.preflight import review_driver
 
 class DriverWindow(BaseWindow):
     def __init__(self,language=None):
@@ -27,21 +29,21 @@ class DriverWindow(BaseWindow):
         self.counts=metrics(p,[(self.pair("Devices","الأجهزة"),"—","#c5e4d0"),(self.pair("Missing drivers","تعريفات ناقصة"),"—","#e7b365"),(self.pair("Needs review","تحتاج مراجعة"),"—","#dc8b8b")])
         self.summary=QLabel(self.pair("No scan yet — no estimated or simulated results.","لم يُنفّذ فحص بعد؛ لا نعرض نتائج تقديرية أو وهمية.")); self.summary.setObjectName("subtitle"); self.summary.setWordWrap(True); p.addWidget(self.summary)
         row=QHBoxLayout(); b=self.button(row,self.pair("Scan devices","فحص الأجهزة"),self.scan_devices,True); b.setEnabled(platform.system()=="Windows"); self.button(row,self.t("backup"),lambda:self.navigate(2)); p.addLayout(row)
-        card,c=self.card(self.pair("Restore begins with a review","الاستعادة تبدأ بالمراجعة"),self.pair("Verified backup matching is available. Driver installation awaits signature, system compatibility and rollback validation.","مطابقة النسخ الاحتياطية متاحة. تثبيت التعريفات ينتظر اكتمال التحقق من التوقيع والتوافق والتراجع.")); p.addWidget(card)
+        card,c=self.card(self.pair("Restore begins with a review","الاستعادة تبدأ بالمراجعة"),self.pair("Review local driver signatures, catalog payloads and Windows compatibility. Installation awaits recovery validation in a Windows VM.","راجع توقيع التعريف المحلي وملفات الكتالوج والتوافق عبر Windows. التثبيت ينتظر اختبار الاسترداد داخل VM.")); p.addWidget(card)
         if platform.system()!="Windows":self.summary.setText(self.t("notwindows"))
         p.addStretch()
-        p=self.page(); row=QHBoxLayout(); b=self.button(row,self.pair("Scan devices","فحص الأجهزة"),self.scan_devices,True); b.setEnabled(platform.system()=="Windows"); self.button(row,self.t("details"),self.device_details); self.button(row,self.t("export"),self.export); p.addLayout(row)
+        p=self.page(); row=QHBoxLayout(); b=self.button(row,self.pair("Scan devices","فحص الأجهزة"),self.scan_devices,True); b.setEnabled(platform.system()=="Windows"); self.button(row,self.t("details"),self.device_details); self.button(row,self.t("export"),self.export); self.button(row,self.pair("Review local INF","مراجعة INF محلي"),self.review_local_inf,symbol="shield"); p.addLayout(row)
         filters=QHBoxLayout(); self.device_search=QLineEdit(); self.device_search.setPlaceholderText(self.pair("Search name, manufacturer or Hardware ID…","ابحث بالاسم أو الشركة أو معرّف العتاد…")); self.device_search.textChanged.connect(self.filter_devices); filters.addWidget(self.device_search,1)
         self.device_filter=QComboBox(); self.device_filter.addItems([self.pair("All devices","جميع الأجهزة"),self.pair("Missing drivers","تعريفات ناقصة"),self.pair("Needs review","تحتاج مراجعة"),self.pair("Network rescue","إنقاذ الشبكة")]); self.device_filter.currentIndexChanged.connect(self.filter_devices); filters.addWidget(self.device_filter); p.addLayout(filters)
         self.device_table=QTableWidget(0,5); self.device_table.setHorizontalHeaderLabels([self.pair("Device","الجهاز"),self.pair("Status","الحالة"),"Code",self.pair("Version","الإصدار"),"INF"]); self.device_table.setSelectionBehavior(QTableWidget.SelectRows); self.device_table.setSelectionMode(QTableWidget.SingleSelection); self.device_table.setEditTriggers(QTableWidget.NoEditTriggers); self.device_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents); self.device_table.horizontalHeader().setSectionResizeMode(0,QHeaderView.Stretch); self.device_table.doubleClicked.connect(self.device_details); self.device_table.itemSelectionChanged.connect(self.device_details); self.device_table.setAlternatingRowColors(True); self.device_table.verticalHeader().hide(); p.addWidget(self.device_table,1); self.device_panel=self.text_panel(p); self.device_panel.setMaximumHeight(140); self.device_panel.hide()
-        p=self.page(); card,c=self.card(self.pair("Driver Store backup","نسخ مخزن التعريفات"),self.pair("Exports third-party OEM drivers with PnPUtil into a new folder, then creates a SHA256 integrity manifest. Microsoft inbox drivers and application installers are not exported. Export may require administrator permission.","يُصدّر تعريفات OEM عبر PnPUtil إلى مجلد جديد ثم ينشئ بيان SHA256 للتحقق. لا يشمل تعريفات Microsoft المدمجة أو برامج الشركات. قد يتطلب التصدير صلاحية المسؤول.")); p.addWidget(card)
+        p=self.page(); card,c=self.card(self.pair("Driver Store backup","نسخ مخزن التعريفات"),self.pair("Exports third-party OEM drivers with PnPUtil into a new folder, then creates a SHA256 integrity manifest. Microsoft inbox drivers and application installers are not exported. Windows requests administrator permission for this operation only.","يُصدّر تعريفات OEM عبر PnPUtil إلى مجلد جديد ثم ينشئ بيان SHA256 للتحقق. لا يشمل تعريفات Microsoft المدمجة أو برامج الشركات. يطلب Windows صلاحية المسؤول لهذه العملية فقط.")); p.addWidget(card)
         row=QHBoxLayout(); b=self.button(row,self.pair("Back up all OEM drivers","نسخ جميع تعريفات OEM"),self.backup_all,True); b.setEnabled(platform.system()=="Windows"); b=self.button(row,self.pair("Back up selected device","نسخ تعريف الجهاز المختار"),self.backup_selected); b.setEnabled(platform.system()=="Windows"); self.button(row,self.pair("Analyze restore folder","تحليل مجلد الاستعادة"),self.preview_restore); p.addLayout(row); self.backup_panel=self.text_panel(p)
         row=QHBoxLayout(); self.button(row,self.pair("Export offline machine profile","تصدير ملف الجهاز دون إنترنت"),self.export_machine,symbol="chip"); self.button(row,self.pair("Match backup to another machine","مطابقة نسخة لجهاز آخر"),self.match_machine,symbol="search"); p.addLayout(row)
         p=self.page(); card,c=self.card(self.pair("Windows Update candidates","اقتراحات Windows Update"),self.pair("Read-only search for available driver updates through Microsoft's Windows Update API. Results do not prove a driver should replace your current OEM package.","بحث للقراءة فقط عن تعريفات متاحة عبر واجهة Windows Update الرسمية. ظهور تحديث لا يثبت ضرورة استبدال تعريف OEM الحالي.")); p.addWidget(card)
         b=self.button(p,self.pair("Search driver updates","بحث تحديثات التعريفات"),self.search_updates,True); b.setEnabled(platform.system()=="Windows"); self.update_panel=self.text_panel(p)
         p=self.page(); row=QHBoxLayout(); self.button(row,self.t("scan"),self.scan_hardware,True); self.button(row,self.t("export"),self.export); p.addLayout(row); self.hardware_panel=self.hardware_view(p)
         if self.hardware:self.show_json(self.hardware_panel,self.hardware.to_dict())
-        p=self.page(); card,c=self.card(self.pair("Windows servicing · Microsoft DISM","خدمة Windows · Microsoft DISM"),self.pair("Read-only tools: check existing corruption flags, list OEM drivers, or inspect a WIM/ESD image. DISM needs administrator permission. CheckHealth is not a full scan or repair.","أدوات للقراءة: فحص مؤشرات التلف المسجلة، عرض تعريفات OEM، وتحليل صور WIM/ESD. تتطلب DISM صلاحية المسؤول. CheckHealth لا يجري فحصًا شاملًا أو إصلاحًا.")); p.addWidget(card)
+        p=self.page(); card,c=self.card(self.pair("Windows servicing · Microsoft DISM","خدمة Windows · Microsoft DISM"),self.pair("Read-only tools: check existing corruption flags, list OEM drivers, or inspect a WIM/ESD image. Windows requests permission for the helper only. CheckHealth is not a full scan or repair.","أدوات للقراءة: فحص مؤشرات التلف المسجلة، عرض تعريفات OEM، وتحليل صور WIM/ESD. يطلب Windows الصلاحية للمساعد فقط. CheckHealth لا يجري فحصًا شاملًا أو إصلاحًا.")); p.addWidget(card)
         row=QHBoxLayout()
         for text,callback,symbol in [(self.pair("Check Windows health","فحص حالة Windows"),self.check_windows_health,"shield"),(self.pair("List DISM drivers","تعريفات DISM"),self.inspect_dism_drivers,"driver"),(self.pair("Inspect WIM / ESD","تحليل WIM / ESD"),self.inspect_windows_image,"iso")]:
             b=self.button(row,text,callback,symbol=symbol); b.setEnabled(platform.system()=="Windows")
@@ -77,6 +79,15 @@ class DriverWindow(BaseWindow):
         index=self.device_table.currentRow()
         if 0<=index<len(self.devices):
             self.device_panel.show(); self.show_json(self.device_panel,self.devices[index].to_dict())
+    def review_local_inf(self):
+        index=self.device_table.currentRow()
+        if index<0 or index>=len(self.devices):QMessageBox.information(self,self.t("select"),self.pair("Select a device first.","اختر جهازًا أولًا.")); return
+        path,_=QFileDialog.getOpenFileName(self,self.pair("Choose local driver INF","اختر ملف INF لتعريف محلي"),"","Driver INF (*.inf)")
+        if not path:return
+        device=self.devices[index]
+        def done(result):
+            self.report['driver_preflight']=result; self.show_json(self.backup_panel,result); self.navigate(2)
+        self.async_task('driver-preflight',lambda:review_driver(Path(path),device),done)
     def destination(self):
         base=QFileDialog.getExistingDirectory(self,self.pair("Choose parent folder for a new backup","اختر المجلد الرئيسي لنسخة احتياطية جديدة"))
         if not base:return None
@@ -84,12 +95,12 @@ class DriverWindow(BaseWindow):
         return Path(base)/("Smart-Driver-Backup-"+datetime.now().strftime("%Y%m%d-%H%M%S"))
     def backup_all(self):
         destination=self.destination()
-        if destination:self.async_task("driver-backup",lambda:backup(destination),lambda r:self.show_json(self.backup_panel,r|{"folder":str(destination)}))
+        if destination:self.async_task("driver-backup",lambda:request_operation("driver-backup",{"destination":str(destination.resolve()),"inf":"*"}),lambda r:self.show_json(self.backup_panel,r|{"folder":str(destination)}))
     def backup_selected(self):
         index=self.device_table.currentRow()
         if index<0 or index>=len(self.devices):QMessageBox.information(self,self.t("select"),self.pair("Select a device in Devices first.","اختر جهازًا من صفحة الأجهزة أولًا.")); return
         inf=self.devices[index].driver_inf; destination=self.destination()
-        if destination:self.async_task("selected-driver-backup",lambda:backup(destination,inf),lambda r:self.show_json(self.backup_panel,r|{"folder":str(destination)}))
+        if destination:self.async_task("selected-driver-backup",lambda:request_operation("driver-backup",{"destination":str(destination.resolve()),"inf":inf}),lambda r:self.show_json(self.backup_panel,r|{"folder":str(destination)}))
     def preview_restore(self):
         if not self.devices:QMessageBox.information(self,self.t("select"),self.pair("Scan Windows devices before matching a backup.","افحص أجهزة Windows قبل مطابقة النسخة الاحتياطية.")); return
         path=QFileDialog.getExistingDirectory(self,self.t("select"))
@@ -114,12 +125,12 @@ class DriverWindow(BaseWindow):
     def servicing_done(self,result):
         self.report['servicing']=result; self.show_json(self.log_panel,result)
     def check_windows_health(self):
-        self.async_task('dism-check-health',check_health,self.servicing_done)
+        self.async_task('dism-check-health',lambda:request_operation('check-health'),self.servicing_done)
     def inspect_dism_drivers(self):
-        self.async_task('dism-driver-inspection',list_drivers,self.servicing_done)
+        self.async_task('dism-driver-inspection',lambda:request_operation('list-drivers'),self.servicing_done)
     def inspect_windows_image(self):
         path,_=QFileDialog.getOpenFileName(self,self.pair("Choose Windows image","اختر صورة Windows"),"","Windows image (*.wim *.esd)")
-        if path:self.async_task('dism-image-inspection',lambda:image_info(Path(path)),self.servicing_done)
+        if path:self.async_task('dism-image-inspection',lambda:request_operation('image-info',{'path':str(Path(path).resolve())}),self.servicing_done)
     def export_logs(self):
         path,_=QFileDialog.getSaveFileName(self,self.t("save"),"smart-driver-activity.jsonl")
         if path:self.journal.export(Path(path))
@@ -127,6 +138,10 @@ class DriverWindow(BaseWindow):
 def main():
     import sys
     app=application(); window=DriverWindow(); window.show()
+    if "--privilege-self-check" in sys.argv:
+        result=request_operation('check-health')
+        assert result['changes_requested'] is False and result['output']
+        window.close(); return 0
     if "--self-check" in sys.argv:
         app.processEvents()
         assert window.stack.count() == 6

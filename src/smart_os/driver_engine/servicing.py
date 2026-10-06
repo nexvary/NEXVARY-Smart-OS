@@ -16,7 +16,8 @@ def _dism(arguments: list[str]) -> dict:
         raise UnsupportedPlatform('DISM inspection requires Windows 10/11 x64')
     if not ctypes.windll.shell32.IsUserAnAdmin():
         raise OperationError('DISM inspection requires administrator permission. No changes were made.')
-    executable = Path(os.environ.get('SystemRoot', r'C:\Windows')) / 'System32' / 'dism.exe'
+    from ..core.windows import system_executable
+    executable = system_executable('dism.exe')
     output = run([str(executable), '/English', *arguments], timeout=180)
     return {'tool': 'Microsoft DISM', 'operation': arguments[1] if arguments[0] == '/Online' else arguments[0],
             'changes_requested': False, 'output': output.strip()}

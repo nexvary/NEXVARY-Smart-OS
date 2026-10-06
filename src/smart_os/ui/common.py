@@ -11,11 +11,11 @@ from ..core.logging import Journal, export_report
 TEXT = {
 "en": {"linux": "Smart Linux Installer", "driver": "Smart Windows Driver", "tag": "SMART OS SUITE  /  NEXVARY",
  "home": "Overview", "hardware": "Hardware", "iso": "ISO & downloads", "profile": "Install profile", "usb": "USB safety", "logs": "Diagnostics", "devices": "Devices", "backup": "Backup & restore", "updates": "Windows Update",
- "scan": "Scan hardware", "export": "Export report", "back": "Back", "about": "About", "busy": "Working…", "error": "Operation could not complete", "save": "Save", "success": "Operation completed", "alpha": "ALPHA 0.2.1  ·  Local first",
+ "scan": "Scan hardware", "export": "Export report", "back": "Back", "about": "About", "busy": "Working…", "error": "Operation could not complete", "save": "Save", "success": "Operation completed", "alpha": "ALPHA 0.3.0  ·  Local first",
  "review": "Review before any disk or driver operation.", "select": "Select", "analyze": "Analyze", "details": "Details", "refresh": "Refresh", "notwindows": "Run this application on Windows 10/11 x64 to inspect real Windows devices."},
 "ar": {"linux": "مثبّت Linux الذكي", "driver": "تعريفات Windows الذكية", "tag": "SMART OS SUITE  /  NEXVARY",
  "home": "الرئيسية", "hardware": "العتاد", "iso": "ISO والتنزيل", "profile": "ملف التثبيت", "usb": "أمان USB", "logs": "التشخيص", "devices": "الأجهزة", "backup": "نسخ واستعادة", "updates": "تحديثات Windows",
- "scan": "فحص العتاد", "export": "تصدير التقرير", "back": "رجوع", "about": "عن البرنامج", "busy": "جارٍ التنفيذ…", "error": "تعذّر إتمام العملية", "save": "حفظ", "success": "اكتملت العملية", "alpha": "نسخة أولية 0.2.1 · محلية افتراضيًا",
+ "scan": "فحص العتاد", "export": "تصدير التقرير", "back": "رجوع", "about": "عن البرنامج", "busy": "جارٍ التنفيذ…", "error": "تعذّر إتمام العملية", "save": "حفظ", "success": "اكتملت العملية", "alpha": "نسخة أولية 0.3.0 · محلية افتراضيًا",
  "review": "راجع التفاصيل قبل أي عملية على القرص أو التعريفات.", "select": "اختيار", "analyze": "تحليل", "details": "التفاصيل", "refresh": "تحديث", "notwindows": "شغّل البرنامج على Windows 10 أو 11 بمعمارية x64 لفحص أجهزته الحقيقية."}}
 
 STYLE = """

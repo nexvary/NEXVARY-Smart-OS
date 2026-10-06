@@ -11,3 +11,8 @@ for slug,name in [("smart-linux-installer","SmartLinuxInstaller"),("smart-window
       str(root/"apps"/slug/"main.py")],cwd=root,check=True)
 
 subprocess.run([sys.executable,str(root/"scripts/bundle_notices.py")],cwd=root,check=True)
+
+if sys.platform=='win32':
+    import shutil
+    subprocess.run([sys.executable,'-m','PyInstaller','--noconfirm','--clean','--onedir','--console','--name','SmartOSPrivilegeHelper','--paths',str(root/'src'),'--exclude-module','PySide6',str(root/'apps/privilege-helper/main.py')],cwd=root,check=True)
+    shutil.move(str(root/'dist/SmartOSPrivilegeHelper'),str(root/'dist/SmartWindowsDriver/_privilege'))

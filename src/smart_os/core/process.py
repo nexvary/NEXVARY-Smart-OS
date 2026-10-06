@@ -26,7 +26,8 @@ def powershell(script: str, timeout: int = 90) -> str:
         raise UnsupportedPlatform("This operation requires Windows 10/11 x64")
     import base64
     encoded = base64.b64encode(script.encode("utf-16le")).decode("ascii")
-    executable = str(Path(os.environ.get("SystemRoot", r"C:\Windows")) / "System32/WindowsPowerShell/v1.0/powershell.exe")
+    from .windows import system_executable
+    executable = system_executable("powershell.exe")
     prefix = "$ErrorActionPreference='Stop'; [Console]::OutputEncoding=[Text.UTF8Encoding]::new(); "
     encoded = base64.b64encode((prefix + script).encode("utf-16le")).decode("ascii")
     return run([executable, "-NoProfile", "-NonInteractive", "-EncodedCommand", encoded], timeout)

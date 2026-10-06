@@ -15,7 +15,8 @@ class DriverSafetyError(ValueError):
 def pnputil() -> str:
     if platform.system() != "Windows":
         raise UnsupportedPlatform("Driver Store operations require Windows")
-    return str(Path(os.environ.get("SystemRoot", r"C:\Windows")) / "System32/pnputil.exe")
+    from ..core.windows import system_executable
+    return system_executable("pnputil.exe")
 
 def backup(destination: Path, inf: str = "*") -> dict:
     if inf != "*" and not re.fullmatch(r"oem[0-9]+\.inf", inf, re.I):

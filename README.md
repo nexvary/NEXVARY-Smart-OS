@@ -1,4 +1,4 @@
-> **0.2.1 alpha update:** neon green interface, colored section/application icons, compact header and read-only Microsoft DISM tools. See [verified release](docs/phase-03-neon-servicing.md) and [Windows servicing](docs/windows-servicing.md).
+> **0.3.0 alpha:** native Windows driver signature/catalog/compatibility review and a one-operation UAC helper for OEM backup and DISM inspection. See [preflight and elevation](docs/windows-preflight.md).
 
 # SMART OS by NEXVARY
 
@@ -7,7 +7,7 @@ Two independent desktop applications, one local safety core:
 - **Smart Linux Installer**: hardware inspection, ISO structure and SHA256 analysis, official HTTPS download, saved profiles, Ubuntu/Debian/Kali preparation seeds, disk/USB safety previews and installer log diagnosis.
 - **Smart Windows Driver**: Windows PnP inventory, Hardware/Compatible IDs, Device Manager problem codes, driver inspection, PnPUtil OEM backups, backup integrity checks, local INF matching preview and read-only Windows Update driver search.
 
-**0.2.1-alpha.1 is a preparation and inspection prototype, not a finished installer or driver updater.** Nothing in this release proves successful operating-system installation or Windows driver restoration. Driver installation is deliberately blocked pending native package signature/catalog checks, OS-decorated INF evaluation, a narrow elevation broker, recovery and Windows VM validation.
+**0.3.0-alpha.1 is a preparation and inspection prototype, not a finished installer or driver updater.** Nothing in this release proves successful operating-system installation or Windows driver restoration. Driver installation is deliberately blocked pending native package active-install signature/OS compatibility rechecks, active-install recovery and Windows VM validation. Native package/compatibility inspection and a narrow backup/DISM elevation helper are available.
 
 ## Run from source
 
@@ -75,8 +75,8 @@ Do not run the entire GUI as root. Raw USB writing is experimental and **not tes
 - Seeds automate locale/keyboard/timezone/packages; storage remains interactive. Ubuntu identity/network remain interactive. They are exported separately, not injected into boot media. No dual-boot shrinking, automated formatting, ISO remastering or OS installation is implemented.
 - SHA256 supplied by a user detects corruption only relative to that value. The user must authenticate the official checksum source. Automatic GPG checksum-signature verification is not implemented.
 - Hardware scan does not assert firmware support, BitLocker status, Fast Startup, TPM availability or SMART health when they were not actually checked.
-- Backup exports third-party OEM drivers only. No Microsoft inbox drivers, OEM software or BIOS are exported. Export may require administrator privileges; narrow automatic elevation is pending.
-- INF matching is a **review**, not Windows' authoritative driver ranking. Signature verification, OS build constraints, catalog membership and native ranking are incomplete. Restore/install is blocked; version/date do not override ID matching.
+- Backup exports third-party OEM drivers only. No Microsoft inbox drivers, OEM software or BIOS are exported. The GUI uses a separate UAC helper for backup export; it stays unelevated.
+- INF matching is a **review**, not Windows' authoritative driver ranking. Native signature/catalog membership and Windows compatible-driver ranking are available through local INF review. Restore/install and rollback remain VM-gated; version/date do not override ID matching.
 - OEM online connectors, curated offline packs, Network Rescue installation, rollback, restore points, auto repair and checkpoints remain future implementation.
 
 See [verification](docs/verification.md), [architecture](docs/architecture.md), [security](docs/security-model.md), [recovery](docs/recovery-model.md) and [testing](docs/testing-guide.md).

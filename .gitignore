@@ -6,3 +6,6 @@ dist/
 artifacts/
 *.spec
 .venv/
+
+.pip-cache/
+pip-ephem-wheel-cache-*/

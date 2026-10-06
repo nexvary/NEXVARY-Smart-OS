@@ -47,6 +47,8 @@ jobs:
           if ($a.ExitCode -ne 0) { throw 'Linux preparation app smoke check failed' }
           $b = Start-Process 'dist/SmartWindowsDriver/SmartWindowsDriver.exe' -ArgumentList '--self-check' -Wait -PassThru
           if ($b.ExitCode -ne 0) { throw 'Driver app smoke check failed' }
+          $c = Start-Process 'dist/SmartWindowsDriver/SmartWindowsDriver.exe' -ArgumentList '--privilege-self-check' -Wait -PassThru
+          if ($c.ExitCode -ne 0) { throw 'Packaged privilege helper check failed' }
       - name: Build separate Windows installers
         if: runner.os == 'Windows'
         run: ./scripts/build-installers.ps1

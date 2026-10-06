@@ -45,7 +45,7 @@ def parse_inf(path: Path) -> Candidate:
             if "=" not in line:
                 continue
             fields = line.split("=", 1)[1].split(",")[1:]
-            ids.extend(x.strip().strip('"').upper() for x in fields if re.match(r"(?i)\s*(PCI|USB|ACPI|HDAUDIO|BTH|HID|ROOT)\\", x))
+            ids.extend(x.strip().strip('"').upper() for x in fields if re.match(r"(?i)\s*(PCI|USB|ACPI|HDAUDIO|BTH|HID|ROOT|VMBUS|SWC|SWD|DISPLAY|SCSI)\\", x))
     catalog = versions.get("catalogfile.ntamd64", versions.get("catalogfile", ""))
     if catalog and (Path(catalog).name != catalog or any(c in catalog for c in "\\/:")):
         raise ValueError("Unsafe catalog filename")

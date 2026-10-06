@@ -17,7 +17,7 @@ class ServicingTests(unittest.TestCase):
             command.assert_not_called()
     def test_health_and_drivers_only_inspect(self):
         native=Mock(); native.shell32.IsUserAnAdmin.return_value=1
-        with patch.object(servicing.platform,'system',return_value='Windows'), patch.object(servicing.ctypes,'windll',native,create=True), patch.object(servicing,'run',return_value='real command output') as command:
+        with patch.object(servicing.platform,'system',return_value='Windows'), patch.object(servicing.ctypes,'windll',native,create=True), patch('smart_os.core.windows.system_executable',return_value='C:/Windows/System32/dism.exe'), patch.object(servicing,'run',return_value='real command output') as command:
             health=servicing.check_health(); drivers=servicing.list_drivers()
             self.assertFalse(health['changes_requested']); self.assertFalse(drivers['changes_requested'])
             self.assertEqual(command.call_args_list[0].args[0][1:],['/English','/Online','/Cleanup-Image','/CheckHealth'])
