@@ -24,7 +24,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y libegl1 libgl1 libxcb-cursor0 xvfb
+          sudo apt-get install -y libegl1 libgl1 libxcb-cursor0 xvfb xauth libxkbcommon-x11-0 libxcb-icccm4 libxcb-keysyms1 libxcb-shape0 libxcb-xinerama0 libxcb-randr0 libxcb-xfixes0 libxcb-sync1 libxcb-render0 libxcb-render-util0 libxcb-xkb1 libx11-xcb1 libsm6 libice6 libfontconfig1
       - run: python -m pip install ".[linux,build]"
       - run: python -m unittest discover -s tests -v
       - name: Windows read-only hardware and Driver Store smoke test
@@ -36,6 +36,7 @@ jobs:
         run: |
           dist/SmartLinuxInstaller/SmartLinuxInstaller --self-check
           dist/SmartWindowsDriver/SmartWindowsDriver --self-check
+          ldd dist/SmartLinuxInstaller/_internal/PySide6/Qt/plugins/platforms/libqxcb.so
           QT_QPA_PLATFORM=xcb xvfb-run -a dist/SmartLinuxInstaller/SmartLinuxInstaller --self-check
       - name: Native bundle smoke checks (Windows)
         if: runner.os == 'Windows'
