@@ -43,11 +43,20 @@ class DriverWindow(BaseWindow):
         b=self.button(p,self.pair("Search driver updates","بحث تحديثات التعريفات"),self.search_updates,True); b.setEnabled(platform.system()=="Windows"); self.update_panel=self.text_panel(p)
         p=self.page(); row=QHBoxLayout(); self.button(row,self.t("scan"),self.scan_hardware,True); self.button(row,self.t("export"),self.export); p.addLayout(row); self.hardware_panel=self.hardware_view(p)
         if self.hardware:self.show_json(self.hardware_panel,self.hardware.to_dict())
-        p=self.page(); card,c=self.card(self.pair("Windows servicing · Microsoft DISM","خدمة Windows · Microsoft DISM"),self.pair("Read-only tools: check existing corruption flags, list OEM drivers, or inspect a WIM/ESD image. Windows requests permission for the helper only. CheckHealth is not a full scan or repair.","أدوات للقراءة: فحص مؤشرات التلف المسجلة، عرض تعريفات OEM، وتحليل صور WIM/ESD. يطلب Windows الصلاحية للمساعد فقط. CheckHealth لا يجري فحصًا شاملًا أو إصلاحًا.")); p.addWidget(card)
+        p=self.page(); card,c=self.card(self.pair("Windows servicing · Microsoft DISM","صيانة Windows · Microsoft DISM"),self.pair("Scan, repair and clean Windows components with explicit confirmation. Only the operation helper is elevated. Results show DISM exit codes; no automatic reboot.","افحص مكونات Windows وأصلحها ونظّفها بعد التأكيد. تُرفع صلاحية مساعد العملية فقط. تعرض النتائج كود DISM ولا يُعاد التشغيل تلقائيًا.")); p.addWidget(card)
         row=QHBoxLayout()
         for text,callback,symbol in [(self.pair("Check Windows health","فحص حالة Windows"),self.check_windows_health,"shield"),(self.pair("List DISM drivers","تعريفات DISM"),self.inspect_dism_drivers,"driver"),(self.pair("Inspect WIM / ESD","تحليل WIM / ESD"),self.inspect_windows_image,"iso")]:
             b=self.button(row,text,callback,symbol=symbol); b.setEnabled(platform.system()=="Windows")
-        p.addLayout(row); exports=QHBoxLayout(); self.button(exports,self.pair("Export activity log","تصدير سجل العمليات"),self.export_logs); self.button(exports,self.t("export"),self.export); p.addLayout(exports); self.log_panel=self.text_panel(p)
+        p.addLayout(row)
+        row=QHBoxLayout()
+        for text,callback,symbol in [(self.pair("Full health scan","فحص التلف الشامل"),self.scan_windows_health,"search"),(self.pair("Analyze components","تحليل المكونات"),self.analyze_components,"chip")]:
+            b=self.button(row,text,callback,symbol=symbol); b.setEnabled(platform.system()=="Windows")
+        p.addLayout(row)
+        row=QHBoxLayout()
+        for text,callback,symbol in [(self.pair("Repair Windows","إصلاح Windows"),self.repair_windows,"shield"),(self.pair("Clean components","تنظيف المكونات"),self.clean_components,"driver")]:
+            b=self.button(row,text,callback,symbol=symbol); b.setEnabled(platform.system()=="Windows")
+        p.addLayout(row)
+        exports=QHBoxLayout(); self.button(exports,self.pair("Export activity log","تصدير سجل العمليات"),self.export_logs); self.button(exports,self.t("export"),self.export); p.addLayout(exports); self.log_panel=self.text_panel(p)
         self.log_panel.setPlainText(self.pair("Logs stay on this computer. Diagnostic exports redact hardware identifiers, serials and credentials. Device details remain visible locally.","السجلات محلية. تُحجب معرّفات العتاد والأرقام التسلسلية وبيانات الدخول من التقارير المصدّرة. تفاصيل الأجهزة ظاهرة محليًا."))
         self.render_devices()
     def render_devices(self):
@@ -123,9 +132,31 @@ class DriverWindow(BaseWindow):
         def done(hardware):self.hardware=hardware; self.report["hardware"]=hardware.to_dict(); self.show_json(self.hardware_panel,hardware.to_dict())
         self.async_task("hardware-scan",scan,done)
     def servicing_done(self,result):
+        if result.get('status'):self.journal.record('dism-result',result['status'])
         self.report['servicing']=result; self.show_json(self.log_panel,result)
     def check_windows_health(self):
         self.async_task('dism-check-health',lambda:request_operation('check-health'),self.servicing_done)
+    def scan_windows_health(self):
+        self.async_task('dism-scan-health',lambda:request_operation('scan-health'),self.servicing_done)
+    def analyze_components(self):
+        self.async_task('dism-analyze-store',lambda:request_operation('analyze-store'),self.servicing_done)
+    def confirm_servicing(self,title,description):
+        return QMessageBox.warning(self,title,description,QMessageBox.Yes|QMessageBox.No,QMessageBox.No)==QMessageBox.Yes
+    def repair_windows(self):
+        if self.pending:return
+        source=None
+        answer=QMessageBox.question(self,self.pair("Repair source","مصدر الإصلاح"),self.pair("Use a local Windows folder from a mounted matching repair image? Choose No to use Windows Update / the configured repair source.","هل تستخدم مجلد Windows من صورة إصلاح مركّبة ومطابقة؟ اختر لا لاستخدام Windows Update أو المصدر المهيأ."),QMessageBox.Yes|QMessageBox.No|QMessageBox.Cancel,QMessageBox.Cancel)
+        if answer==QMessageBox.Cancel:return
+        if answer==QMessageBox.Yes:
+            folder=QFileDialog.getExistingDirectory(self,self.pair("Select Windows folder containing WinSxS","اختر مجلد Windows الذي يحتوي WinSxS"))
+            if not folder:return
+            source=str(Path(folder).resolve())
+        if not self.confirm_servicing(self.pair("Confirm Windows repair","تأكيد إصلاح Windows"),self.pair("RestoreHealth will modify Windows components and may need Internet or a restart. The app will not restart Windows. Keep the app open until results arrive. Continue?","سيعدّل RestoreHealth مكونات Windows وقد يحتاج إنترنت أو إعادة تشغيل. لن يعيد البرنامج التشغيل. اتركه مفتوحًا حتى ظهور النتيجة. هل تتابع؟")):return
+        self.async_task('dism-restore-health',lambda:request_operation('restore-health',{'confirmed':True,'source':source}),self.servicing_done)
+    def clean_components(self):
+        if self.pending:return
+        if not self.confirm_servicing(self.pair("Confirm component cleanup","تأكيد تنظيف المكونات"),self.pair("DISM will analyze then remove superseded Windows components. This is not personal-file cleanup. ResetBase is not used. A restart may be needed; cleanup has no app-level undo. Continue?","سيحلّل DISM المخزن ثم يحذف مكونات Windows المستبدلة. هذا ليس تنظيف ملفاتك الشخصية. لا نستخدم ResetBase. قد تلزم إعادة تشغيل ولا يوفر البرنامج تراجعًا عن التنظيف. هل تتابع؟")):return
+        self.async_task('dism-cleanup-store',lambda:request_operation('cleanup-store',{'confirmed':True}),self.servicing_done)
     def inspect_dism_drivers(self):
         self.async_task('dism-driver-inspection',lambda:request_operation('list-drivers'),self.servicing_done)
     def inspect_windows_image(self):

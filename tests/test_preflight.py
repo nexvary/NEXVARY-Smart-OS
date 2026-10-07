@@ -59,7 +59,7 @@ class PrivilegeProtocolTests(unittest.TestCase):
     def request(self,op='check-health',params=None):
         return {'schema':1,'nonce':'a'*32,'operation':op,'parameters':params or {}}
     def test_only_fixed_operations_and_keys(self):
-        for op in ('install-driver','delete-driver','run','powershell','reboot','restore-health'):
+        for op in ('install-driver','delete-driver','run','powershell','reboot','arbitrary-repair'):
             with self.assertRaises(ValueError):validate_request(self.request(op))
         with self.assertRaises(ValueError):validate_request(self.request(params={'script':'Write-Host unsafe'}))
         with self.assertRaises(ValueError):validate_request(self.request()|{'executable':'bad.exe'})

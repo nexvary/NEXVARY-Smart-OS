@@ -1,6 +1,6 @@
 """One-operation UAC helper. Local message pipe; no arbitrary commands or scripts.
 
-Only DISM inspection and creation of new OEM driver backups are enabled.
+Fixed DISM inspection, confirmed repair/cleanup and new OEM driver backups.
 Installation/removal, reboot and shell execution are not protocol operations.
 """
 from __future__ import annotations
@@ -32,10 +32,16 @@ def validate_request(request):
         raise ValueError('Unsupported privilege request')
     if not isinstance(request['nonce'],str) or not re.fullmatch('[0-9a-f]{32}',request['nonce']):raise ValueError('Invalid request nonce')
     op=request['operation'];params=request['parameters']
-    allowed={'check-health':set(),'list-drivers':set(),'image-info':{'path'},'driver-backup':{'destination','inf'}}
+    allowed={'check-health':set(),'scan-health':set(),'analyze-store':set(),
+             'restore-health':{'confirmed','source'},'cleanup-store':{'confirmed'},
+             'list-drivers':set(),'image-info':{'path'},'driver-backup':{'destination','inf'}}
     if not isinstance(op,str) or op not in allowed or not isinstance(params,dict) or set(params)!=allowed[op]:
         raise ValueError('Privilege operation or parameters not allowed')
     for key,value in params.items():
+        if key=='confirmed':
+            if value is not True:raise ValueError('Explicit confirmation required')
+            continue
+        if key=='source' and value is None:continue
         if not isinstance(value,str) or not value or '\x00' in value or len(value)>32767:raise ValueError('Invalid privilege parameter')
         if key!='inf' and not Path(value).is_absolute():raise ValueError('Privilege paths must be absolute')
     if op=='driver-backup' and params['inf']!='*' and not re.fullmatch('oem[0-9]+\\.inf',params['inf'],re.I):raise ValueError('Invalid OEM INF name')
@@ -46,12 +52,16 @@ def validate_request(request):
 def dispatch(request):
     validate_request(request)
     # Fixed imports and fixed operations; never supplied module/executable/script.
-    from ..driver_engine.servicing import check_health, list_drivers, image_info
+    from ..driver_engine.servicing import check_health, list_drivers, image_info, scan_health, analyze_store, restore_health, cleanup_store
     from ..driver_engine.backup import backup
     params=request['parameters']
     if request['operation']=='check-health':return check_health()
     if request['operation']=='list-drivers':return list_drivers()
     if request['operation']=='image-info':return image_info(Path(params['path']))
+    if request['operation']=='scan-health':return scan_health()
+    if request['operation']=='analyze-store':return analyze_store()
+    if request['operation']=='restore-health':return restore_health(Path(params['source']) if params['source'] else None,confirmed=params['confirmed'])
+    if request['operation']=='cleanup-store':return cleanup_store(confirmed=params['confirmed'])
     return backup(Path(params['destination']),params['inf'])
 
 
@@ -138,7 +148,7 @@ def request_operation(operation,parameters=None):
             time.sleep(.05)
         else:raise OperationError('Privilege helper did not connect')
         raw=json.dumps(request,separators=(',',':')).encode();_write(kernel,pipe,raw)
-        response=json.loads(_read(kernel,pipe,MAX_RESPONSE,330))
+        response=json.loads(_read(kernel,pipe,MAX_RESPONSE,6000 if operation in {'restore-health','cleanup-store','scan-health'} else 2100 if operation=='analyze-store' else 330))
         if not isinstance(response,dict) or response.get('nonce')!=request['nonce'] or response.get('request_hash')!=hashlib.sha256(raw).hexdigest():raise OperationError('Privilege response does not match request')
         if response.get('ok') is not True:raise OperationError(response.get('error','Privilege operation failed'))
         return response['result']
