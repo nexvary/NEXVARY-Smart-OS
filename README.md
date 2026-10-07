@@ -1,4 +1,5 @@
-> **0.3.0 alpha:** native Windows driver signature/catalog/compatibility review and a one-operation UAC helper for OEM backup and DISM inspection. See [verified milestone](docs/phase-04-native-preflight.md) and [preflight and elevation](docs/windows-preflight.md).
+> **0.4.0 alpha:** confirmed RestoreHealth and component cleanup, ScanHealth, component-store analysis, and the existing native driver audit / OEM backup. See [Windows servicing execution](docs/windows-servicing-execution.md).
+
 
 # SMART OS by NEXVARY
 
@@ -7,7 +8,7 @@ Two independent desktop applications, one local safety core:
 - **Smart Linux Installer**: hardware inspection, ISO structure and SHA256 analysis, official HTTPS download, saved profiles, Ubuntu/Debian/Kali preparation seeds, disk/USB safety previews and installer log diagnosis.
 - **Smart Windows Driver**: Windows PnP inventory, Hardware/Compatible IDs, Device Manager problem codes, driver inspection, PnPUtil OEM backups, backup integrity checks, local INF matching preview and read-only Windows Update driver search.
 
-**0.3.0-alpha.1 is a preparation and inspection prototype, not a finished installer or driver updater.** Nothing in this release proves successful operating-system installation or Windows driver restoration. Driver installation is deliberately blocked pending native package active-install signature/OS compatibility rechecks, active-install recovery and Windows VM validation. Native package/compatibility inspection and a narrow backup/DISM elevation helper are available.
+**0.4.0-alpha.1 adds Windows component servicing to the prototype; full OS deployment and active driver updating remain incomplete.** Nothing in this release proves successful operating-system installation or Windows driver restoration. Driver installation is deliberately blocked pending native package active-install signature/OS compatibility rechecks, active-install recovery and Windows VM validation. Native package/compatibility inspection and a narrow backup/DISM elevation helper are available. Confirmed Windows component repair/cleanup is separate from active driver installation.
 
 ## Run from source
 
@@ -21,7 +22,7 @@ smart-linux-installer
 Windows Driver can be installed without the Linux extras:
 
 ```powershell
-python -m pip install .
+python -m pip install -e .
 smart-windows-driver
 ```
 
@@ -46,7 +47,7 @@ python scripts/build.py
 
 PyInstaller emits `dist/SmartLinuxInstaller/` and `dist/SmartWindowsDriver/` separately. Build on the target OS. A Linux ELF is never relabeled as a Windows EXE. Keep each executable beside its `_internal` folder. Ubuntu may need `libxcb-cursor0` and normal Qt xcb system libraries for a graphical desktop. Qt offscreen testing does not prove all desktop dependencies are installed.
 
-The repository is `nexvary/NEXVARY-Smart-OS`, branch `dev/foundation`. [Actions run 37511580427](https://github.com/nexvary/NEXVARY-Smart-OS/actions/runs/37511580427) passed on Ubuntu 24.04 and Windows Server 2022: 79 tests per OS, independent native builds, actual OEM export and native trust/compatibility inspection, modified-payload rejection, helper RPC and two Setup install-launch-uninstall tests. [Verification](docs/phase-04-native-preflight.md) separates these checks from untested interactive UAC, physical Windows 10/11 and active driver mutation.
+The repository is `nexvary/NEXVARY-Smart-OS`, branch `dev/foundation`. [Actions run 37582039447](https://github.com/nexvary/NEXVARY-Smart-OS/actions/runs/37582039447) passed on Ubuntu 24.04 and Windows Server 2022: 89 tests per OS, independent native builds, actual OEM export and native trust/compatibility inspection, modified-payload rejection, confirmed real DISM scan/repair/cleanup through the helper, and both Setup install-launch-uninstall tests. [Servicing verification](docs/phase-05-windows-servicing.md) distinguishes these checks from untested interactive UAC, physical Windows 10/11 and active driver mutation.
 
 ## CLI
 
