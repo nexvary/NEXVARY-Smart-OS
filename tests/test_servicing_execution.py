@@ -1,4 +1,7 @@
 import subprocess
+import json
+import os
+import runpy
 import tempfile
 import unittest
 from pathlib import Path
@@ -66,6 +69,7 @@ class ServicingUITests(unittest.TestCase):
         with patch.object(QMessageBox,'warning',return_value=QMessageBox.No),patch.object(w,'async_task') as task:
             w.clean_components();task.assert_not_called()
         w.close()
+
     def test_repair_confirmation_and_source_cancel_never_run(self):
         w=DriverWindow('en')
         with patch.object(QMessageBox,'question',return_value=QMessageBox.Cancel),patch.object(w,'async_task') as task:
@@ -78,3 +82,17 @@ class ServicingUITests(unittest.TestCase):
         with patch.object(QMessageBox,'warning',return_value=QMessageBox.Yes),patch.object(w,'async_task') as task,patch('smart_os.windows_app.request_operation',return_value={}) as helper:
             w.clean_components();task.call_args.args[1]();helper.assert_called_once_with('cleanup-store',{'confirmed':True})
         w.close()
+
+
+class ServicingEvidenceTests(unittest.TestCase):
+    def test_native_smoke_writes_a_readable_report(self):
+        script=Path(__file__).resolve().parents[1]/'scripts/windows-servicing-smoke.py'
+        outcome={'status':'completed','exit_code_hex':'0x00000000','reboot_required':False,
+                 'automatic_reboot':False,'health_verified':True,'reset_base':False}
+        previous=Path.cwd()
+        with tempfile.TemporaryDirectory() as folder, patch('smart_os.core.elevation.request_operation',return_value=outcome):
+            try:
+                os.chdir(folder);runpy.run_path(str(script))
+                report=json.loads(Path('artifacts/verification/windows-servicing.json').read_text())
+                self.assertEqual(report['verification'],'passed');self.assertEqual(len(report['operations']),4)
+            finally:os.chdir(previous)

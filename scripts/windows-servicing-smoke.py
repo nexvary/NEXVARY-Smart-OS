@@ -23,4 +23,4 @@ try:
     report['verification'] = 'passed'
 finally:
     Path('artifacts/verification').mkdir(parents=True, exist_ok=True)
-    export_report(report, Path('artifacts/verification/windows-servicing.json'))
+    export_report(Path('artifacts/verification/windows-servicing.json'), report)
